@@ -3,6 +3,7 @@
 
   var THEME_KEY = 'veson_theme';
   var SYNC_KEY = 'veson_sync_code';
+  var LAYOUT_KEY = 'veson_layout_v1';
 
   // Same Supabase project the calendar app syncs through. The key is the
   // project's public/anon "publishable" key (not a secret) — it's already
@@ -45,9 +46,9 @@
       now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
-  /* ── View routing (side nav + any [data-view] trigger) ── */
+  /* ── View routing (top tabs, rail, any [data-view] trigger) ── */
   function setView(view) {
-    document.querySelectorAll('.nav-item[data-view]').forEach(function (item) {
+    document.querySelectorAll('.nav-trigger[data-view]').forEach(function (item) {
       item.classList.toggle('active', item.dataset.view === view);
     });
     document.querySelectorAll('.view').forEach(function (section) {
@@ -302,6 +303,90 @@
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') save();
     });
+
+    document.getElementById('resetLayoutBtn').addEventListener('click', resetLayout);
+  }
+
+  /* ── Draggable dashboard cards ── */
+  function dragEnabled() {
+    return window.innerWidth > 1100;
+  }
+
+  function saveLayout() {
+    var canvas = document.getElementById('dashCanvas');
+    var layout = {};
+    canvas.querySelectorAll('.dash-card').forEach(function (card) {
+      layout[card.dataset.card] = {
+        left: (card.offsetLeft / canvas.clientWidth) * 100,
+        top: (card.offsetTop / canvas.clientHeight) * 100,
+      };
+    });
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
+  }
+
+  function applyLayout() {
+    var canvas = document.getElementById('dashCanvas');
+    var raw = localStorage.getItem(LAYOUT_KEY);
+    if (!raw) return;
+    var layout;
+    try { layout = JSON.parse(raw); } catch (e) { return; }
+    Object.keys(layout).forEach(function (id) {
+      var card = canvas.querySelector('[data-card="' + id + '"]');
+      if (!card || typeof layout[id].left !== 'number') return;
+      card.style.left = layout[id].left + '%';
+      card.style.top = layout[id].top + '%';
+      card.style.right = 'auto';
+    });
+  }
+
+  function resetLayout() {
+    localStorage.removeItem(LAYOUT_KEY);
+    document.querySelectorAll('.dash-card').forEach(function (card) {
+      card.style.left = '';
+      card.style.top = '';
+      card.style.right = '';
+    });
+  }
+
+  function initDrag() {
+    var canvas = document.getElementById('dashCanvas');
+    var drag = null;
+
+    canvas.addEventListener('pointerdown', function (e) {
+      if (!dragEnabled()) return;
+      var card = e.target.closest('.dash-card');
+      if (!card) return;
+      // Let interactive elements work normally
+      if (e.target.closest('button, input, [data-view], .link-btn')) return;
+      drag = {
+        card: card,
+        dx: e.clientX - card.offsetLeft,
+        dy: e.clientY - card.offsetTop,
+      };
+      card.classList.add('dragging');
+      card.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+
+    canvas.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var maxX = Math.max(0, canvas.clientWidth - drag.card.offsetWidth);
+      var maxY = Math.max(0, canvas.clientHeight - drag.card.offsetHeight);
+      var x = Math.min(Math.max(0, e.clientX - drag.dx), maxX);
+      var y = Math.min(Math.max(0, e.clientY - drag.dy), maxY);
+      drag.card.style.left = x + 'px';
+      drag.card.style.top = y + 'px';
+      drag.card.style.right = 'auto';
+    });
+
+    function endDrag() {
+      if (!drag) return;
+      drag.card.classList.remove('dragging');
+      saveLayout();
+      drag = null;
+    }
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
   }
 
   /* ── Command bar (visual only — no functionality yet) ── */
@@ -318,6 +403,8 @@
     initCalendar();
     initSettings();
     initCommandBar();
+    applyLayout();
+    initDrag();
     tick();
     setInterval(tick, 30000);
     loadEvents();
