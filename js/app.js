@@ -11,6 +11,12 @@
   var SUPABASE_URL = 'https://jmmwqqssqujsiedafqdd.supabase.co';
   var SUPABASE_KEY = 'sb_publishable_0MIMm7jy7QykSBBBOZb5nw_wLaGbnoN';
 
+  // 'loading' | 'ready' | 'error' | 'nocode'
+  var eventsState = 'nocode';
+  var allEvents = [];
+  var calMonth = startOfMonth(new Date());
+  var selectedDate = startOfDay(new Date());
+
   /* ── Theme ── */
   function applyTheme(theme) {
     document.body.classList.toggle('light', theme === 'light');
@@ -19,12 +25,9 @@
   }
 
   function initTheme() {
-    var saved = localStorage.getItem(THEME_KEY) || 'dark';
-    applyTheme(saved);
-    var btn = document.getElementById('themeToggle');
-    btn.addEventListener('click', function () {
-      var current = document.body.classList.contains('light') ? 'light' : 'dark';
-      var next = current === 'light' ? 'dark' : 'light';
+    applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
+    document.getElementById('themeToggle').addEventListener('click', function () {
+      var next = document.body.classList.contains('light') ? 'dark' : 'light';
       localStorage.setItem(THEME_KEY, next);
       applyTheme(next);
     });
@@ -35,13 +38,11 @@
     var now = new Date();
     var hour = now.getHours();
     var period = hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
-    var greeting = document.getElementById('greeting');
-    if (greeting) greeting.textContent = 'Good ' + period + ', Marc';
-
-    var timeEl = document.getElementById('clockTime');
-    var dateEl = document.getElementById('clockDate');
-    if (timeEl) timeEl.textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-    if (dateEl) dateEl.textContent = now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+    document.getElementById('greeting').textContent = 'Good ' + period + ', Marc';
+    document.getElementById('clockTime').textContent =
+      now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    document.getElementById('clockDate').textContent =
+      now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
   /* ── View routing (side nav + any [data-view] trigger) ── */
@@ -61,19 +62,45 @@
     });
   }
 
-  /* ── Calendar sync ── */
+  /* ── Date helpers ── */
+  function startOfDay(d) {
+    var x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x;
+  }
+  function startOfMonth(d) {
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  }
+  function isSameDay(a, b) {
+    return a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+  }
   function parseDate(s) {
     var parts = s.split('-').map(Number);
     return new Date(parts[0], parts[1] - 1, parts[2]);
   }
-
-  function eventCoversToday(ev, today) {
+  function fmtDate(d) {
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+  function eventCoversDate(ev, day) {
+    if (!ev.date) return false;
     var start = parseDate(ev.date);
     var end = ev.endDate ? parseDate(ev.endDate) : start;
-    return today >= start && today <= end;
+    return day >= start && day <= end;
+  }
+  function eventsForDate(day) {
+    return allEvents
+      .filter(function (ev) { return eventCoversDate(ev, day); })
+      .sort(function (a, b) {
+        return (a.startTime || '00:00').localeCompare(b.startTime || '00:00');
+      });
   }
 
-  function fetchTodayEvents(code) {
+  /* ── Sync fetch ── */
+  function fetchAllEvents(code) {
     var url = SUPABASE_URL + '/rest/v1/sync?code=eq.' + encodeURIComponent(code) + '&select=events';
     return fetch(url, {
       headers: {
@@ -84,24 +111,37 @@
       if (!res.ok) throw new Error('Sync request failed: ' + res.status);
       return res.json();
     }).then(function (rows) {
-      if (!rows.length) return [];
-      var events = rows[0].events || [];
-      var today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return events
-        .filter(function (ev) { return eventCoversToday(ev, today); })
-        .sort(function (a, b) {
-          return (a.startTime || '00:00').localeCompare(b.startTime || '00:00');
-        });
+      return rows.length ? (rows[0].events || []) : [];
     });
   }
 
-  function renderEventsBody(children) {
-    var body = document.getElementById('eventsBody');
-    body.innerHTML = '';
-    children.forEach(function (child) { body.appendChild(child); });
+  function loadEvents() {
+    var code = localStorage.getItem(SYNC_KEY);
+    if (!code) {
+      eventsState = 'nocode';
+      allEvents = [];
+      renderAll();
+      return;
+    }
+    eventsState = 'loading';
+    renderAll();
+    fetchAllEvents(code).then(function (events) {
+      allEvents = events;
+      eventsState = 'ready';
+      renderAll();
+    }).catch(function () {
+      eventsState = 'error';
+      renderAll();
+    });
   }
 
+  function renderAll() {
+    renderHomeEvents();
+    renderCalendar();
+    renderDayEvents();
+  }
+
+  /* ── Shared render helpers ── */
   function textNode(tag, className, text) {
     var el = document.createElement(tag);
     el.className = className;
@@ -109,7 +149,7 @@
     return el;
   }
 
-  function renderNoCode() {
+  function noCodeMessage() {
     var p = document.createElement('p');
     p.className = 'empty-state';
     p.appendChild(document.createTextNode('No sync code set yet.'));
@@ -119,37 +159,112 @@
     link.dataset.view = 'settings';
     link.textContent = 'Go to Settings →';
     p.appendChild(link);
-    renderEventsBody([p]);
+    return p;
   }
 
-  function renderLoading() {
-    renderEventsBody([textNode('p', 'empty-state', 'Loading events…')]);
+  function stateMessage() {
+    if (eventsState === 'nocode') return noCodeMessage();
+    if (eventsState === 'loading') return textNode('p', 'empty-state', 'Loading events…');
+    if (eventsState === 'error') return textNode('p', 'empty-state', "Couldn't reach the sync service. Try again shortly.");
+    return null;
   }
 
-  function renderError() {
-    renderEventsBody([textNode('p', 'empty-state', "Couldn't reach the sync service. Try again shortly.")]);
+  function eventRow(ev) {
+    var row = document.createElement('div');
+    row.className = 'event-row';
+    row.appendChild(textNode('span', 'event-time', ev.allDay ? 'All day' : (ev.startTime || '')));
+    row.appendChild(textNode('span', 'event-title', ev.title || '(untitled event)'));
+    return row;
   }
 
-  function renderEvents(events) {
-    if (!events.length) {
-      renderEventsBody([textNode('p', 'empty-state', 'No events today.')]);
+  function fillBody(body, children) {
+    body.innerHTML = '';
+    children.forEach(function (child) { body.appendChild(child); });
+  }
+
+  /* ── Home: today's events ── */
+  function renderHomeEvents() {
+    var body = document.getElementById('eventsBody');
+    var msg = stateMessage();
+    if (msg) { fillBody(body, [msg]); return; }
+    var todays = eventsForDate(startOfDay(new Date()));
+    if (!todays.length) {
+      fillBody(body, [textNode('p', 'empty-state', 'No events today.')]);
       return;
     }
-    var rows = events.map(function (ev) {
-      var row = document.createElement('div');
-      row.className = 'event-row';
-      row.appendChild(textNode('span', 'event-time', ev.allDay ? 'All day' : (ev.startTime || '')));
-      row.appendChild(textNode('span', 'event-title', ev.title || '(untitled event)'));
-      return row;
-    });
-    renderEventsBody(rows);
+    fillBody(body, todays.map(eventRow));
   }
 
-  function loadTodayEvents() {
-    var code = localStorage.getItem(SYNC_KEY);
-    if (!code) { renderNoCode(); return; }
-    renderLoading();
-    fetchTodayEvents(code).then(renderEvents).catch(renderError);
+  /* ── Calendar view ── */
+  function renderCalendar() {
+    var grid = document.getElementById('calGrid');
+    var title = document.getElementById('calTitle');
+    title.textContent = calMonth.toLocaleDateString([], { month: 'long', year: 'numeric' });
+
+    grid.innerHTML = '';
+    var today = startOfDay(new Date());
+    var firstWeekday = (calMonth.getDay() + 6) % 7; // Monday-based
+    var daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
+
+    for (var i = 0; i < firstWeekday; i++) {
+      grid.appendChild(textNode('div', 'cal-cell blank', ''));
+    }
+    for (var day = 1; day <= daysInMonth; day++) {
+      var date = new Date(calMonth.getFullYear(), calMonth.getMonth(), day);
+      var cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      if (isSameDay(date, today)) cell.classList.add('today');
+      if (isSameDay(date, selectedDate)) cell.classList.add('selected');
+      cell.dataset.date = fmtDate(date);
+      cell.appendChild(textNode('span', 'cal-daynum', String(day)));
+
+      var count = eventsState === 'ready' ? eventsForDate(date).length : 0;
+      if (count) {
+        var dots = document.createElement('div');
+        dots.className = 'cal-dots';
+        for (var d = 0; d < Math.min(count, 3); d++) {
+          dots.appendChild(textNode('span', 'cal-dot', ''));
+        }
+        cell.appendChild(dots);
+      }
+      grid.appendChild(cell);
+    }
+  }
+
+  function renderDayEvents() {
+    var title = document.getElementById('calDayTitle');
+    var body = document.getElementById('calDayBody');
+    var today = startOfDay(new Date());
+    title.textContent = isSameDay(selectedDate, today)
+      ? 'Today'
+      : selectedDate.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+
+    var msg = stateMessage();
+    if (msg) { fillBody(body, [msg]); return; }
+    var dayEvents = eventsForDate(selectedDate);
+    if (!dayEvents.length) {
+      fillBody(body, [textNode('p', 'empty-state', 'No events this day.')]);
+      return;
+    }
+    fillBody(body, dayEvents.map(eventRow));
+  }
+
+  function initCalendar() {
+    document.getElementById('calPrev').addEventListener('click', function () {
+      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1);
+      renderCalendar();
+    });
+    document.getElementById('calNext').addEventListener('click', function () {
+      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1);
+      renderCalendar();
+    });
+    document.getElementById('calGrid').addEventListener('click', function (e) {
+      var cell = e.target.closest('.cal-cell');
+      if (!cell || cell.classList.contains('blank')) return;
+      selectedDate = parseDate(cell.dataset.date);
+      renderCalendar();
+      renderDayEvents();
+    });
   }
 
   /* ── Settings ── */
@@ -180,7 +295,7 @@
         localStorage.removeItem(SYNC_KEY);
         updateSyncStatus(false);
       }
-      loadTodayEvents();
+      loadEvents();
     }
 
     saveBtn.addEventListener('click', save);
@@ -191,8 +306,7 @@
 
   /* ── Command bar (visual only — no functionality yet) ── */
   function initCommandBar() {
-    var input = document.getElementById('commandInput');
-    input.addEventListener('keydown', function (e) {
+    document.getElementById('commandInput').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') e.preventDefault();
     });
   }
@@ -201,10 +315,11 @@
   document.addEventListener('DOMContentLoaded', function () {
     initTheme();
     initRouting();
+    initCalendar();
     initSettings();
     initCommandBar();
     tick();
     setInterval(tick, 30000);
-    loadTodayEvents();
+    loadEvents();
   });
 })();

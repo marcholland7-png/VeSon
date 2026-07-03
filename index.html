@@ -258,11 +258,29 @@
     </section>
 
     <section class="view" id="view-calendar">
-      <div class="cards-grid">
-        <div class="card placeholder-card">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
-          <h2>Calendar</h2>
-          <p>Coming soon.</p>
+      <div class="calendar-layout">
+        <div class="card cal-card">
+          <div class="cal-header">
+            <button class="cal-nav-btn" id="calPrev" type="button" title="Previous month">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <h2 id="calTitle">&nbsp;</h2>
+            <button class="cal-nav-btn" id="calNext" type="button" title="Next month">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+          <div class="cal-weekdays">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+        <div class="card cal-day-card">
+          <div class="card-header">
+            <h2 id="calDayTitle">Events</h2>
+          </div>
+          <div class="card-body" id="calDayBody">
+            <p class="empty-state">Select a day.</p>
+          </div>
         </div>
       </div>
     </section>

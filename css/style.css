@@ -617,6 +617,96 @@ body.light .greeting .subtext { text-shadow: none; }
   transform: rotate(45deg);
 }
 
+/* ── Calendar view ── */
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 18px;
+  max-width: 980px;
+  align-items: start;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cal-header h2 {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.cal-nav-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid var(--surface-border);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.cal-nav-btn:hover { color: var(--accent-text); border-color: var(--accent); }
+.cal-nav-btn svg { width: 15px; height: 15px; }
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+.cal-weekdays span {
+  text-align: center;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 4px 0;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.cal-cell {
+  min-height: 54px;
+  border-radius: 10px;
+  padding: 6px 0 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.12s ease, border-color 0.12s ease;
+  user-select: none;
+}
+.cal-cell:not(.blank):hover { background: var(--surface-hover); }
+.cal-cell.blank { cursor: default; }
+.cal-cell.today { border-color: var(--accent); }
+.cal-cell.selected { background: var(--accent-dim); }
+.cal-cell.selected .cal-daynum { color: var(--accent-text); font-weight: 800; }
+.cal-daynum { font-size: 0.8rem; font-weight: 600; }
+.cal-dots { display: flex; gap: 3px; }
+.cal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .calendar-layout { grid-template-columns: 1fr; }
+}
+
 /* ── Generic views (settings/placeholders) ── */
 .cards-grid {
   display: flex;
