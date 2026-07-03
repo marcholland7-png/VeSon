@@ -50,16 +50,12 @@ body {
   min-height: 100vh;
 }
 
-/* ── Background photo + scrim ──
-   Drop your own wallpaper at assets/bg.jpg — it takes priority; the
-   remote picsum image only shows while assets/bg.jpg doesn't exist. */
+/* ── Background photo + scrim ── */
 .bg-photo {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background:
-    url('../assets/bg.jpg') center / cover no-repeat,
-    url('https://picsum.photos/seed/veson-hq/1920/1080') center / cover no-repeat;
+  background: url('../assets/bg.jpg') center / cover no-repeat;
 }
 .bg-scrim {
   position: fixed;
