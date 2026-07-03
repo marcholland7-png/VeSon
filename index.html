@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veson</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="bg-photo"></div>
+<div class="bg-scrim"></div>
+
+<div class="app-shell">
+
+  <nav class="sidenav">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span class="logo-text">VESON<span class="logo-version">v1.0</span></span>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item active" data-view="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h5v-6h2v6h5a1 1 0 0 0 1-1v-9"/></svg>
+        <span>Home</span>
+      </li>
+      <li class="nav-item" data-view="system">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
+        <span>System</span>
+      </li>
+      <li class="nav-item" data-view="tasks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1z"/><path d="M8.5 12l1.8 1.8L14.5 10"/></svg>
+        <span>Tasks</span>
+      </li>
+      <li class="nav-item" data-view="calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+        <span>Calendar</span>
+      </li>
+      <li class="nav-item" data-view="data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/></svg>
+        <span>Data</span>
+      </li>
+      <li class="nav-item" data-view="apps">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
+        <span>Apps</span>
+      </li>
+      <li class="nav-item" data-view="comms">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/></svg>
+        <span>Comms</span>
+      </li>
+      <li class="nav-item" data-view="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l2-1.4-2-3.4-2.3.9a8 8 0 0 0-1.7-1L15 3h-4l-.4 2.1a8 8 0 0 0-1.7 1l-2.3-.9-2 3.4L6.6 11a7.9 7.9 0 0 0 0 2l-2 1.4 2 3.4 2.3-.9a8 8 0 0 0 1.7 1L11 21h4l.4-2.1a8 8 0 0 0 1.7-1l2.3.9 2-3.4z"/></svg>
+        <span>Settings</span>
+      </li>
+    </ul>
+
+    <button class="theme-toggle" id="themeToggle" type="button">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A8 8 0 1 1 9.8 4a6.5 6.5 0 0 0 10.2 10.2z"/></svg>
+      <span id="themeToggleLabel">Light Mode</span>
+    </button>
+  </nav>
+
+  <main class="main-content">
+
+    <header class="top-bar">
+      <div class="greeting">
+        <h1 id="greeting">Good morning, Marc</h1>
+        <p class="subtext">How can I assist you today?</p>
+      </div>
+
+      <div class="top-icons">
+        <button class="top-icon-btn" data-view="tasks" type="button" title="Tasks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 12l1.8 1.8L14.5 10"/></svg>
+        </button>
+        <button class="top-icon-btn" data-view="calendar" type="button" title="Calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+        </button>
+        <button class="top-icon-btn" data-view="data" type="button" title="Data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/></svg>
+        </button>
+        <button class="top-icon-btn" data-view="settings" type="button" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l2-1.4-2-3.4-2.3.9a8 8 0 0 0-1.7-1L15 3h-4l-.4 2.1a8 8 0 0 0-1.7 1l-2.3-.9-2 3.4L6.6 11a7.9 7.9 0 0 0 0 2l-2 1.4 2 3.4 2.3-.9a8 8 0 0 0 1.7 1L11 21h4l.4-2.1a8 8 0 0 0 1.7-1l2.3.9 2-3.4z"/></svg>
+        </button>
+      </div>
+
+      <div class="top-right">
+        <div class="clock">
+          <div class="time" id="clockTime">--:--</div>
+          <div class="date" id="clockDate">-</div>
+        </div>
+        <div class="profile-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.2 4-6.4 8-6.4s8 2.2 8 6.4"/></svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- ━━━ HOME ━━━ -->
+    <section class="view active" id="view-home">
+      <div class="home-grid">
+
+        <div class="home-main">
+          <div class="quick-tiles">
+            <div class="quick-tile" data-view="tasks">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 12l1.8 1.8L14.5 10"/></svg>
+              <span>Tasks</span>
+            </div>
+            <div class="quick-tile" data-view="calendar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+              <span>Calendar</span>
+            </div>
+            <div class="quick-tile" data-view="data">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/></svg>
+              <span>Data</span>
+            </div>
+            <div class="quick-tile" data-view="apps">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
+              <span>Apps</span>
+            </div>
+            <div class="quick-tile" data-view="comms">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/></svg>
+              <span>Comms</span>
+            </div>
+          </div>
+
+          <div class="home-spacer"></div>
+
+          <div class="bottom-cards">
+            <div class="card">
+              <div class="card-header">
+                <h2>Upcoming Events</h2>
+              </div>
+              <div class="card-body" id="eventsBody">
+                <p class="empty-state">
+                  No sync code set yet.<br>
+                  <span class="link-btn" data-view="settings">Go to Settings &rarr;</span>
+                </p>
+              </div>
+              <span class="card-link card-footer-link" data-view="calendar">
+                View Calendar
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              </span>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h2>AI Insight</h2>
+              </div>
+              <p class="insight-text">You've been most productive between <strong>9AM&ndash;11AM</strong> this week. Consider scheduling deep work in this time block.</p>
+              <svg class="insight-chart" viewBox="0 0 260 56" preserveAspectRatio="none" aria-hidden="true">
+                <path class="chart-fill" d="M0,48 L20,42 L40,45 L60,30 L80,36 L100,14 L120,26 L140,20 L160,34 L180,28 L200,40 L220,32 L240,44 L260,38 L260,56 L0,56 Z"/>
+                <path class="chart-line" d="M0,48 L20,42 L40,45 L60,30 L80,36 L100,14 L120,26 L140,20 L160,34 L180,28 L200,40 L220,32 L240,44 L260,38"/>
+              </svg>
+              <div class="chart-axis"><span>6AM</span><span>12PM</span><span>6PM</span><span>12AM</span></div>
+            </div>
+
+            <div class="card np-card">
+              <div class="card-header">
+                <h2>Now Playing</h2>
+              </div>
+              <div class="np-track">
+                <div class="np-art"></div>
+                <div class="np-meta">
+                  <div class="np-title">The Diary of Jane</div>
+                  <div class="np-artist">Breaking Benjamin</div>
+                </div>
+              </div>
+              <div class="np-controls">
+                <button type="button" title="Shuffle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c5.5 0 5.5 12 11 12H21"/><path d="M3 18h3.5c2.2 0 3.6-1.9 4.9-4M21 6h-3.5c-2.3 0-3.7 2-5 4.1"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3"/></svg></button>
+                <button type="button" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5l-10 7 10 7z"/></svg></button>
+                <button type="button" class="np-play" title="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7z"/></svg></button>
+                <button type="button" title="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l10 7-10 7z"/></svg></button>
+                <button type="button" title="Volume"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6.5 9H3v6h3.5L11 19z" fill="currentColor" stroke="none"/><path d="M15 9.5a4 4 0 0 1 0 5M17.5 7a7.5 7.5 0 0 1 0 10"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="home-side">
+          <div class="card">
+            <div class="card-header">
+              <h2>System Status</h2>
+            </div>
+            <div class="status-row">
+              <span class="status-label">CPU</span>
+              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,16 12,12 24,15 36,9 48,13 60,7 72,11 84,6 100,10"/></svg>
+              <span class="status-value">27%</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">RAM</span>
+              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,12 12,14 24,9 36,13 48,8 60,12 72,7 84,12 100,8"/></svg>
+              <span class="status-value">46%</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Storage</span>
+              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,14 12,13 24,14 36,12 48,13 60,11 72,12 84,10 100,11"/></svg>
+              <span class="status-value">72%</span>
+            </div>
+            <div class="status-row">
+              <span class="status-label">Network</span>
+              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,18 12,8 24,14 36,6 48,12 60,4 72,10 84,5 100,9"/></svg>
+              <span class="status-value">91%</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2>Active Tasks</h2>
+            </div>
+            <div class="tasks-widget">
+              <div class="ring-wrap">
+                <svg class="ring" viewBox="0 0 64 64">
+                  <circle class="ring-bg" cx="32" cy="32" r="26"/>
+                  <circle class="ring-fg" cx="32" cy="32" r="26"/>
+                </svg>
+                <div class="ring-label"><strong>68%</strong><span>complete</span></div>
+              </div>
+              <ul class="task-list">
+                <li><span class="task-check done"></span>Reply to emails</li>
+                <li><span class="task-check done"></span>Research competitors</li>
+                <li><span class="task-check"></span>Prepare presentation</li>
+                <li><span class="task-check"></span>Book flight to Sydney</li>
+                <li><span class="task-check"></span>Call with supplier</li>
+              </ul>
+            </div>
+            <span class="card-link card-footer-link" data-view="tasks">
+              View All Tasks
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+            </span>
+          </div>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- ━━━ Placeholder views ━━━ -->
+    <section class="view" id="view-system">
+      <div class="cards-grid">
+        <div class="card placeholder-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
+          <h2>System</h2>
+          <p>Coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-tasks">
+      <div class="cards-grid">
+        <div class="card placeholder-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1z"/><path d="M8.5 12l1.8 1.8L14.5 10"/></svg>
+          <h2>Tasks</h2>
+          <p>Coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-calendar">
+      <div class="cards-grid">
+        <div class="card placeholder-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+          <h2>Calendar</h2>
+          <p>Coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-data">
+      <div class="cards-grid">
+        <div class="card placeholder-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/></svg>
+          <h2>Data</h2>
+          <p>Coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-apps">
+      <div class="cards-grid">
+        <div class="card placeholder-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
+          <h2>Apps</h2>
+          <p>Coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-comms">
+      <div class="cards-grid">
+        <div class="card placeholder-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/></svg>
+          <h2>Comms</h2>
+          <p>Coming soon.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ━━━ SETTINGS ━━━ -->
+    <section class="view" id="view-settings">
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2>Calendar Sync</h2>
+          </div>
+          <div class="card-body">
+            <label class="field-label" for="syncCodeInput">Sync Code</label>
+            <input type="text" id="syncCodeInput" class="sync-input" placeholder="e.g. A3B7C2D1" maxlength="8" autocomplete="off">
+            <button class="btn-save" id="saveSyncBtn" type="button">Save</button>
+            <p class="sync-status" id="syncStatus"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="command-bar">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="command-icon"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+  <input type="text" placeholder="Say something, or type a command..." id="commandInput">
+  <button class="mic-btn" type="button" tabindex="-1">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3"/></svg>
+  </button>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
