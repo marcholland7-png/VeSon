@@ -797,6 +797,45 @@ body.light .greeting .subtext { text-shadow: none; }
   max-width: 100%;
 }
 
+/* ── Hours & Pay view ── */
+.hours-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 900px;
+  margin-top: 18px;
+}
+.hours-table-wrap {
+  max-height: 480px;
+  overflow-y: auto;
+}
+.hours-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.hours-table th {
+  text-align: left;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--surface-border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+.hours-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--surface-border);
+  color: var(--text);
+  white-space: nowrap;
+}
+.hours-table td.muted { color: var(--muted); }
+.hours-table tr:last-child td { border-bottom: none; }
+
 .placeholder-card {
   text-align: center;
   padding: 40px 24px;

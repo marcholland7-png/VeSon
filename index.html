@@ -200,6 +200,10 @@
                 <span class="link-btn" data-view="settings">Go to Settings &rarr;</span>
               </p>
             </div>
+            <span class="card-link card-footer-link" data-view="data">
+              View Hours &amp; Pay
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+            </span>
           </div>
 
           <div class="dash-card card" data-card="insight">
@@ -289,11 +293,35 @@
       </section>
 
       <section class="view" id="view-data">
-        <div class="cards-grid">
-          <div class="card placeholder-card">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/></svg>
-            <h2>Data</h2>
-            <p>Coming soon.</p>
+        <div class="hours-page">
+          <div class="card">
+            <div class="card-header">
+              <h2>Hours &amp; Pay</h2>
+            </div>
+            <div class="card-body">
+              <div class="earnings-grid" id="hoursSummaryGrid">
+                <p class="empty-state">
+                  No sync code set yet.<br>
+                  <span class="link-btn" data-view="settings">Go to Settings &rarr;</span>
+                </p>
+              </div>
+              <div class="earnings-stamp" id="hoursStamp"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2>Shift History</h2>
+            </div>
+            <div class="card-body">
+              <div class="hours-table-wrap">
+                <table class="hours-table">
+                  <thead>
+                    <tr><th>Date</th><th>Shift</th><th>Hours</th><th>Status</th><th>Gross</th><th>Net</th></tr>
+                  </thead>
+                  <tbody id="hoursTableBody"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </section>

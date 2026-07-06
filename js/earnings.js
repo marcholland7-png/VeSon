@@ -175,6 +175,65 @@
     body.innerHTML = parts.join('');
   }
 
+  function renderHoursPage(data, jobs) {
+    var grid = document.getElementById('hoursSummaryGrid');
+    var stamp = document.getElementById('hoursStamp');
+    var tbody = document.getElementById('hoursTableBody');
+    if (!grid || !tbody) return;
+
+    var shifts = (data && data.shifts) || [];
+    var today = startOfDay(new Date());
+    var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    var yearStart = new Date(today.getFullYear(), 0, 1);
+    var month = sumRange(shifts, jobs, monthStart, null);
+    var ytd = sumRange(shifts, jobs, yearStart, null);
+
+    grid.innerHTML =
+      '<div class="earnings-cell">' +
+        '<span class="cell-label">This month</span>' +
+        '<span class="cell-value">' + fmtMoney(month.net) + '</span>' +
+        '<span class="cell-sub">' + month.hours.toFixed(1) + ' hrs · ' + fmtMoney(month.gross) + ' gross</span>' +
+      '</div>' +
+      '<div class="earnings-cell">' +
+        '<span class="cell-label">Year to date</span>' +
+        '<span class="cell-value">' + fmtMoney(ytd.net) + '</span>' +
+        '<span class="cell-sub">' + ytd.hours.toFixed(1) + ' hrs · ' + fmtMoney(ytd.gross) + ' gross</span>' +
+      '</div>';
+
+    stamp.textContent = 'Last synced: ' + (data && data.updated_at
+      ? new Date(data.updated_at).toLocaleString([], {
+          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        })
+      : '—');
+
+    var sorted = shifts.slice().sort(function (a, b) {
+      return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+    });
+
+    if (!sorted.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted">No shifts synced yet.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = sorted.map(function (s) {
+      var job = jobForShift(s, jobs);
+      var hrs = shiftHours(s);
+      var gross = hrs * job.hourlyRate;
+      var pay = (calcFns[job.calcMode] || calcFns.flat)(gross, job);
+      var dateLabel = new Date(s.date + 'T00:00:00').toLocaleDateString([], {
+        weekday: 'short', month: 'short', day: 'numeric'
+      });
+      return '<tr>' +
+        '<td>' + dateLabel + '</td>' +
+        '<td>' + s.start + '–' + s.end + '</td>' +
+        '<td>' + hrs.toFixed(1) + '</td>' +
+        '<td class="muted">' + (s.status || '') + '</td>' +
+        '<td>' + fmtMoney(gross) + '</td>' +
+        '<td>' + fmtMoney(pay.net) + '</td>' +
+      '</tr>';
+    }).join('');
+  }
+
   function showEmpty(msg, withLink) {
     var body = document.getElementById('earningsBody');
     if (!body) return;
@@ -202,6 +261,24 @@
         renderCard(data, jobs);
       }).catch(function () {
         showEmpty('Couldn\'t load Eitje data. Try again shortly.', false);
+      });
+    },
+    initHoursPage: function () {
+      var tbody = document.getElementById('hoursTableBody');
+      var grid = document.getElementById('hoursSummaryGrid');
+      if (!tbody || !grid) return;
+
+      var jobs = loadJobs();
+      var code = localStorage.getItem(SYNC_KEY);
+      if (!code) {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">No sync code set yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = '<tr><td colspan="6" class="muted">Loading…</td></tr>';
+      fetchEitjeData(code).then(function (data) {
+        renderHoursPage(data, jobs);
+      }).catch(function () {
+        tbody.innerHTML = '<tr><td colspan="6" class="muted">Couldn\'t load Eitje data. Try again shortly.</td></tr>';
       });
     }
   };

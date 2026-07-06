@@ -297,7 +297,10 @@
         updateSyncStatus(false);
       }
       loadEvents();
-      if (window.VesonEarnings) window.VesonEarnings.init();
+      if (window.VesonEarnings) {
+        window.VesonEarnings.init();
+        window.VesonEarnings.initHoursPage();
+      }
     }
 
     saveBtn.addEventListener('click', save);
@@ -409,6 +412,9 @@
     tick();
     setInterval(tick, 30000);
     loadEvents();
-    if (window.VesonEarnings) window.VesonEarnings.init();
+    if (window.VesonEarnings) {
+      window.VesonEarnings.init();
+      window.VesonEarnings.initHoursPage();
+    }
   });
 })();
