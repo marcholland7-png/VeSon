@@ -5,19 +5,6 @@
   var SYNC_KEY = 'veson_sync_code';
   var LAYOUT_KEY = 'veson_layout_v1';
 
-  // Same Supabase project the calendar app syncs through. The key is the
-  // project's public/anon "publishable" key (not a secret) — it's already
-  // exposed client-side in that app's own source, so reusing it here for
-  // read-only lookups by sync code carries no additional exposure.
-  var SUPABASE_URL = 'https://jmmwqqssqujsiedafqdd.supabase.co';
-  var SUPABASE_KEY = 'sb_publishable_0MIMm7jy7QykSBBBOZb5nw_wLaGbnoN';
-
-  // 'loading' | 'ready' | 'error' | 'nocode'
-  var eventsState = 'nocode';
-  var allEvents = [];
-  var calMonth = startOfMonth(new Date());
-  var selectedDate = startOfDay(new Date());
-
   /* ── Theme ── */
   function applyTheme(theme) {
     document.body.classList.toggle('light', theme === 'light');
@@ -63,211 +50,6 @@
     });
   }
 
-  /* ── Date helpers ── */
-  function startOfDay(d) {
-    var x = new Date(d);
-    x.setHours(0, 0, 0, 0);
-    return x;
-  }
-  function startOfMonth(d) {
-    return new Date(d.getFullYear(), d.getMonth(), 1);
-  }
-  function isSameDay(a, b) {
-    return a.getFullYear() === b.getFullYear() &&
-      a.getMonth() === b.getMonth() &&
-      a.getDate() === b.getDate();
-  }
-  function parseDate(s) {
-    var parts = s.split('-').map(Number);
-    return new Date(parts[0], parts[1] - 1, parts[2]);
-  }
-  function fmtDate(d) {
-    return d.getFullYear() + '-' +
-      String(d.getMonth() + 1).padStart(2, '0') + '-' +
-      String(d.getDate()).padStart(2, '0');
-  }
-  function eventCoversDate(ev, day) {
-    if (!ev.date) return false;
-    var start = parseDate(ev.date);
-    var end = ev.endDate ? parseDate(ev.endDate) : start;
-    return day >= start && day <= end;
-  }
-  function eventsForDate(day) {
-    return allEvents
-      .filter(function (ev) { return eventCoversDate(ev, day); })
-      .sort(function (a, b) {
-        return (a.startTime || '00:00').localeCompare(b.startTime || '00:00');
-      });
-  }
-
-  /* ── Sync fetch ── */
-  function fetchAllEvents(code) {
-    var url = SUPABASE_URL + '/rest/v1/sync?code=eq.' + encodeURIComponent(code) + '&select=events';
-    return fetch(url, {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: 'Bearer ' + SUPABASE_KEY,
-      },
-    }).then(function (res) {
-      if (!res.ok) throw new Error('Sync request failed: ' + res.status);
-      return res.json();
-    }).then(function (rows) {
-      return rows.length ? (rows[0].events || []) : [];
-    });
-  }
-
-  function loadEvents() {
-    var code = localStorage.getItem(SYNC_KEY);
-    if (!code) {
-      eventsState = 'nocode';
-      allEvents = [];
-      renderAll();
-      return;
-    }
-    eventsState = 'loading';
-    renderAll();
-    fetchAllEvents(code).then(function (events) {
-      allEvents = events;
-      eventsState = 'ready';
-      renderAll();
-    }).catch(function () {
-      eventsState = 'error';
-      renderAll();
-    });
-  }
-
-  function renderAll() {
-    renderHomeEvents();
-    renderCalendar();
-    renderDayEvents();
-  }
-
-  /* ── Shared render helpers ── */
-  function textNode(tag, className, text) {
-    var el = document.createElement(tag);
-    el.className = className;
-    el.textContent = text;
-    return el;
-  }
-
-  function noCodeMessage() {
-    var p = document.createElement('p');
-    p.className = 'empty-state';
-    p.appendChild(document.createTextNode('No sync code set yet.'));
-    p.appendChild(document.createElement('br'));
-    var link = document.createElement('span');
-    link.className = 'link-btn';
-    link.dataset.view = 'settings';
-    link.textContent = 'Go to Settings →';
-    p.appendChild(link);
-    return p;
-  }
-
-  function stateMessage() {
-    if (eventsState === 'nocode') return noCodeMessage();
-    if (eventsState === 'loading') return textNode('p', 'empty-state', 'Loading events…');
-    if (eventsState === 'error') return textNode('p', 'empty-state', "Couldn't reach the sync service. Try again shortly.");
-    return null;
-  }
-
-  function eventRow(ev) {
-    var row = document.createElement('div');
-    row.className = 'event-row';
-    row.appendChild(textNode('span', 'event-time', ev.allDay ? 'All day' : (ev.startTime || '')));
-    row.appendChild(textNode('span', 'event-title', ev.title || '(untitled event)'));
-    return row;
-  }
-
-  function fillBody(body, children) {
-    body.innerHTML = '';
-    children.forEach(function (child) { body.appendChild(child); });
-  }
-
-  /* ── Home: today's events ── */
-  function renderHomeEvents() {
-    var body = document.getElementById('eventsBody');
-    var msg = stateMessage();
-    if (msg) { fillBody(body, [msg]); return; }
-    var todays = eventsForDate(startOfDay(new Date()));
-    if (!todays.length) {
-      fillBody(body, [textNode('p', 'empty-state', 'No events today.')]);
-      return;
-    }
-    fillBody(body, todays.map(eventRow));
-  }
-
-  /* ── Calendar view ── */
-  function renderCalendar() {
-    var grid = document.getElementById('calGrid');
-    var title = document.getElementById('calTitle');
-    title.textContent = calMonth.toLocaleDateString([], { month: 'long', year: 'numeric' });
-
-    grid.innerHTML = '';
-    var today = startOfDay(new Date());
-    var firstWeekday = (calMonth.getDay() + 6) % 7; // Monday-based
-    var daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
-
-    for (var i = 0; i < firstWeekday; i++) {
-      grid.appendChild(textNode('div', 'cal-cell blank', ''));
-    }
-    for (var day = 1; day <= daysInMonth; day++) {
-      var date = new Date(calMonth.getFullYear(), calMonth.getMonth(), day);
-      var cell = document.createElement('div');
-      cell.className = 'cal-cell';
-      if (isSameDay(date, today)) cell.classList.add('today');
-      if (isSameDay(date, selectedDate)) cell.classList.add('selected');
-      cell.dataset.date = fmtDate(date);
-      cell.appendChild(textNode('span', 'cal-daynum', String(day)));
-
-      var count = eventsState === 'ready' ? eventsForDate(date).length : 0;
-      if (count) {
-        var dots = document.createElement('div');
-        dots.className = 'cal-dots';
-        for (var d = 0; d < Math.min(count, 3); d++) {
-          dots.appendChild(textNode('span', 'cal-dot', ''));
-        }
-        cell.appendChild(dots);
-      }
-      grid.appendChild(cell);
-    }
-  }
-
-  function renderDayEvents() {
-    var title = document.getElementById('calDayTitle');
-    var body = document.getElementById('calDayBody');
-    var today = startOfDay(new Date());
-    title.textContent = isSameDay(selectedDate, today)
-      ? 'Today'
-      : selectedDate.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-
-    var msg = stateMessage();
-    if (msg) { fillBody(body, [msg]); return; }
-    var dayEvents = eventsForDate(selectedDate);
-    if (!dayEvents.length) {
-      fillBody(body, [textNode('p', 'empty-state', 'No events this day.')]);
-      return;
-    }
-    fillBody(body, dayEvents.map(eventRow));
-  }
-
-  function initCalendar() {
-    document.getElementById('calPrev').addEventListener('click', function () {
-      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1);
-      renderCalendar();
-    });
-    document.getElementById('calNext').addEventListener('click', function () {
-      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1);
-      renderCalendar();
-    });
-    document.getElementById('calGrid').addEventListener('click', function (e) {
-      var cell = e.target.closest('.cal-cell');
-      if (!cell || cell.classList.contains('blank')) return;
-      selectedDate = parseDate(cell.dataset.date);
-      renderCalendar();
-      renderDayEvents();
-    });
-  }
-
   /* ── Settings ── */
   function updateSyncStatus(connected) {
     var status = document.getElementById('syncStatus');
@@ -296,7 +78,7 @@
         localStorage.removeItem(SYNC_KEY);
         updateSyncStatus(false);
       }
-      loadEvents();
+      if (window.VesonCalendar) window.VesonCalendar.refresh();
       if (window.VesonEarnings) {
         window.VesonEarnings.init();
         window.VesonEarnings.initHoursPage();
@@ -404,14 +186,13 @@
   document.addEventListener('DOMContentLoaded', function () {
     initTheme();
     initRouting();
-    initCalendar();
     initSettings();
     initCommandBar();
     applyLayout();
     initDrag();
     tick();
     setInterval(tick, 30000);
-    loadEvents();
+    if (window.VesonCalendar) window.VesonCalendar.init();
     if (window.VesonEarnings) {
       window.VesonEarnings.init();
       window.VesonEarnings.initHoursPage();

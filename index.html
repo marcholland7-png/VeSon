@@ -265,31 +265,158 @@
       </section>
 
       <section class="view" id="view-calendar">
-        <div class="calendar-layout">
-          <div class="card cal-card">
-            <div class="cal-header">
-              <button class="cal-nav-btn" id="calPrev" type="button" title="Previous month">
+        <div class="cal-page">
+          <div class="cal-toolbar">
+            <div class="cal-view-tabs">
+              <button class="cal-view-tab active" data-calview="month" type="button">Month</button>
+              <button class="cal-view-tab" data-calview="week" type="button">Week</button>
+              <button class="cal-view-tab" data-calview="agenda" type="button">Agenda</button>
+            </div>
+            <div class="cal-nav">
+              <button class="cal-nav-btn" id="calPrev" type="button" title="Previous">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
               </button>
               <h2 id="calTitle">&nbsp;</h2>
-              <button class="cal-nav-btn" id="calNext" type="button" title="Next month">
+              <button class="cal-nav-btn" id="calNext" type="button" title="Next">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
               </button>
+              <button class="cal-today-btn" id="calTodayBtn" type="button">Today</button>
             </div>
-            <div class="cal-weekdays">
-              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-            </div>
-            <div class="cal-grid" id="calGrid"></div>
+            <button class="cal-add-btn" id="calAddBtn" type="button">+ Add Event</button>
           </div>
-          <div class="card cal-day-card">
-            <div class="card-header">
-              <h2 id="calDayTitle">Events</h2>
+
+          <div class="cal-body">
+            <!-- Month -->
+            <div class="cal-view-panel active card" id="calPanel-month">
+              <div class="cal-weekdays">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+              </div>
+              <div class="cal-grid" id="calGrid"></div>
             </div>
-            <div class="card-body" id="calDayBody">
-              <p class="empty-state">Select a day.</p>
+
+            <!-- Week -->
+            <div class="cal-view-panel card" id="calPanel-week">
+              <div class="wk-hdr" id="wkHdr"></div>
+              <div class="wk-scroll">
+                <div class="wk-body" id="wkBody"></div>
+              </div>
+            </div>
+
+            <!-- Agenda -->
+            <div class="cal-view-panel card" id="calPanel-agenda">
+              <div class="cal-agenda-view" id="calAgendaView"></div>
             </div>
           </div>
         </div>
+
+        <!-- Day detail modal -->
+        <div class="cal-modal" id="dayModal">
+          <div class="cal-modal-header">
+            <h2 id="dayModalTitle">Day</h2>
+            <button class="cal-modal-close" id="dayModalClose" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div id="dayModalBody"></div>
+          <button class="cal-modal-add" id="dayModalAdd" type="button">+ Add event on this day</button>
+        </div>
+
+        <!-- Event add/edit modal -->
+        <div class="cal-modal" id="eventModal">
+          <div class="cal-modal-header">
+            <h2 id="eventModalTitle">Add Event</h2>
+            <button class="cal-modal-close" id="eventModalClose" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <div class="cf-field">
+            <label class="cf-label" for="efTitle">Title</label>
+            <input type="text" id="efTitle" class="cf-input" placeholder="Event title">
+          </div>
+
+          <div class="cf-row">
+            <div class="cf-field">
+              <label class="cf-label" for="efDate">Date</label>
+              <input type="date" id="efDate" class="cf-input">
+            </div>
+            <div class="cf-field">
+              <label class="cf-label" for="efEndDate">End date (optional)</label>
+              <input type="date" id="efEndDate" class="cf-input">
+            </div>
+          </div>
+
+          <div class="cf-checkbox-row">
+            <input type="checkbox" id="efAllDay">
+            <label for="efAllDay">All day</label>
+          </div>
+
+          <div class="cf-row" id="efTimeWrap">
+            <div class="cf-field">
+              <label class="cf-label" for="efStart">Start time</label>
+              <input type="time" id="efStart" class="cf-input">
+            </div>
+            <div class="cf-field">
+              <label class="cf-label" for="efEnd">End time</label>
+              <input type="time" id="efEnd" class="cf-input">
+            </div>
+          </div>
+
+          <div class="cf-field">
+            <label class="cf-label">Category</label>
+            <div class="cf-pills" id="efCatPills"></div>
+          </div>
+
+          <div class="cf-field">
+            <label class="cf-label" for="efLocation">Location (optional)</label>
+            <input type="text" id="efLocation" class="cf-input" placeholder="Location">
+          </div>
+
+          <div class="cf-field">
+            <label class="cf-label" for="efNotes">Notes (optional)</label>
+            <textarea id="efNotes" class="cf-textarea" placeholder="Notes"></textarea>
+          </div>
+
+          <div class="cf-field">
+            <label class="cf-label">Repeat</label>
+            <div class="cf-pills" id="efRepeatPills">
+              <button class="cf-pill sel" data-repeat="none" type="button">None</button>
+              <button class="cf-pill" data-repeat="daily" type="button">Daily</button>
+              <button class="cf-pill" data-repeat="weekly" type="button">Weekly</button>
+            </div>
+          </div>
+
+          <div class="cf-field" id="efRepeatDaysWrap" style="display:none">
+            <label class="cf-label">On these days</label>
+            <div class="cf-days-grid" id="efRepeatDays">
+              <button class="cf-day-btn" data-dow="1" type="button">M</button>
+              <button class="cf-day-btn" data-dow="2" type="button">T</button>
+              <button class="cf-day-btn" data-dow="3" type="button">W</button>
+              <button class="cf-day-btn" data-dow="4" type="button">T</button>
+              <button class="cf-day-btn" data-dow="5" type="button">F</button>
+              <button class="cf-day-btn" data-dow="6" type="button">S</button>
+              <button class="cf-day-btn" data-dow="0" type="button">S</button>
+            </div>
+          </div>
+
+          <div class="cf-field" id="efRepeatWeeksWrap" style="display:none">
+            <label class="cf-label">For how many weeks</label>
+            <div class="cf-pills" id="efRepeatWeeksPills">
+              <button class="cf-pill sel" data-weeks="2" type="button">2</button>
+              <button class="cf-pill" data-weeks="3" type="button">3</button>
+              <button class="cf-pill" data-weeks="4" type="button">4</button>
+              <button class="cf-pill" data-weeks="5" type="button">5</button>
+            </div>
+          </div>
+
+          <div class="cf-actions">
+            <button class="cf-delete-btn" id="efDelete" type="button" style="display:none">Delete</button>
+            <button class="btn-ghost" id="efCancel" type="button" style="flex:1">Cancel</button>
+            <button class="btn-save" id="efSave" type="button" style="flex:1">Save Event</button>
+          </div>
+        </div>
+
+        <div class="cal-overlay" id="calOverlay"></div>
       </section>
 
       <section class="view" id="view-data">
@@ -384,6 +511,7 @@
   </button>
 </div>
 
+<script src="js/calendar.js"></script>
 <script src="js/earnings.js"></script>
 <script src="js/app.js"></script>
 </body>
