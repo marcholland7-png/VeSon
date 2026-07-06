@@ -297,6 +297,7 @@
         updateSyncStatus(false);
       }
       loadEvents();
+      if (window.VesonEarnings) window.VesonEarnings.init();
     }
 
     saveBtn.addEventListener('click', save);
@@ -408,5 +409,6 @@
     tick();
     setInterval(tick, 30000);
     loadEvents();
+    if (window.VesonEarnings) window.VesonEarnings.init();
   });
 })();
