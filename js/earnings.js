@@ -245,7 +245,51 @@
     body.innerHTML = html;
   }
 
+  function jobsSummary(jobs) {
+    return jobs.map(function (j) {
+      return { name: j.name, team: j.team, hourlyRate: j.hourlyRate };
+    });
+  }
+  function roundTotals(t) {
+    return { hours: +t.hours.toFixed(1), gross: +t.gross.toFixed(2), net: +t.net.toFixed(2) };
+  }
+
   window.VesonEarnings = {
+    // Compact, read-only snapshot for the AI command bar. Resolves a Promise
+    // so callers get live Eitje data without re-implementing the fetch/calc.
+    getSnapshot: function () {
+      var code = localStorage.getItem(SYNC_KEY);
+      var jobs = loadJobs();
+      if (!code) return Promise.resolve({ hasCode: false, jobs: jobsSummary(jobs) });
+      return fetchEitjeData(code).then(function (data) {
+        var shifts = (data && data.shifts) || [];
+        var today = startOfDay(new Date());
+        var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        var yearStart = new Date(today.getFullYear(), 0, 1);
+        var todayShift = shifts.find(function (s) {
+          return sameDay(new Date(s.date + 'T00:00:00'), today);
+        });
+        var upcoming = shifts.filter(function (s) {
+          return startOfDay(new Date(s.date + 'T00:00:00')) >= today;
+        }).sort(function (a, b) {
+          return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+        }).slice(0, 8).map(function (s) {
+          var job = jobForShift(s, jobs);
+          return { date: s.date, start: s.start, end: s.end, hours: +shiftHours(s).toFixed(1), job: job.name };
+        });
+        return {
+          hasCode: true,
+          jobs: jobsSummary(jobs),
+          month: roundTotals(sumRange(shifts, jobs, monthStart, null)),
+          ytd: roundTotals(sumRange(shifts, jobs, yearStart, null)),
+          today: todayShift ? { date: todayShift.date, start: todayShift.start, end: todayShift.end } : null,
+          upcoming: upcoming,
+          updatedAt: (data && data.updated_at) || null
+        };
+      }).catch(function () {
+        return { hasCode: true, error: true, jobs: jobsSummary(jobs) };
+      });
+    },
     init: function () {
       var body = document.getElementById('earningsBody');
       if (!body) return;

@@ -496,6 +496,18 @@
               <button class="btn-ghost" id="resetLayoutBtn" type="button">Reset Layout</button>
             </div>
           </div>
+          <div class="card">
+            <div class="card-header">
+              <h2>AI Assistant</h2>
+            </div>
+            <div class="card-body">
+              <label class="field-label" for="aiWorkerInput">Worker URL</label>
+              <input type="text" id="aiWorkerInput" class="sync-input" placeholder="https://veson-ai.you.workers.dev" autocomplete="off">
+              <button class="btn-save" id="aiWorkerSaveBtn" type="button">Save</button>
+              <p class="sync-status" id="aiWorkerStatus"></p>
+              <p class="settings-note">Deploy the proxy in <code>workers/veson-ai</code> (see its README), then paste the URL here. Your API key stays on the Worker.</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -503,9 +515,17 @@
   </div>
 </div>
 
+<div class="ai-panel" id="aiPanel" hidden>
+  <div class="ai-panel-head">
+    <span class="ai-panel-title">VESON Assistant</span>
+    <button class="ai-panel-close" id="aiPanelClose" type="button" aria-label="Close">&times;</button>
+  </div>
+  <div class="ai-messages" id="aiMessages"></div>
+</div>
+
 <div class="command-bar">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="command-icon"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-  <input type="text" placeholder="Say something, or type a command..." id="commandInput">
+  <input type="text" placeholder="Ask about your shifts, pay, or calendar…" id="commandInput">
   <button class="mic-btn" type="button" tabindex="-1">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0"/><path d="M12 18v3"/></svg>
   </button>
@@ -514,5 +534,6 @@
 <script src="js/calendar.js"></script>
 <script src="js/earnings.js"></script>
 <script src="js/app.js"></script>
+<script src="js/assistant.js"></script>
 </body>
 </html>

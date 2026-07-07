@@ -757,6 +757,30 @@
     refresh: function () {
       render();
       pullSync().then(render);
+    },
+    // Compact list of events from today through the next ~3 weeks, for the AI
+    // command bar. Reads the already-synced in-memory events.
+    getSnapshot: function () {
+      var horizon = new Date(today);
+      horizon.setDate(horizon.getDate() + 21);
+      var out = [];
+      events.forEach(function (ev) {
+        var start = parseDate(ev.date);
+        var end = ev.endDate ? parseDate(ev.endDate) : start;
+        if (end < today || start > horizon) return;
+        out.push({
+          date: ev.date,
+          title: ev.title || '(untitled)',
+          time: ev.allDay ? 'all day'
+            : (ev.startTime ? ev.startTime + (ev.endTime ? '–' + ev.endTime : '') : ''),
+          category: (CAT_BY_ID[ev.category] || CAT_BY_ID.other).label
+        });
+      });
+      out.sort(function (a, b) {
+        if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+        return (a.time || '') < (b.time || '') ? -1 : 1;
+      });
+      return out.slice(0, 20);
     }
   };
 })();

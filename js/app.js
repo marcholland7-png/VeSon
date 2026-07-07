@@ -175,19 +175,13 @@
     canvas.addEventListener('pointercancel', endDrag);
   }
 
-  /* ── Command bar (visual only — no functionality yet) ── */
-  function initCommandBar() {
-    document.getElementById('commandInput').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') e.preventDefault();
-    });
-  }
+  /* ── Command bar is handled by js/assistant.js ── */
 
   /* ── Init ── */
   document.addEventListener('DOMContentLoaded', function () {
     initTheme();
     initRouting();
     initSettings();
-    initCommandBar();
     applyLayout();
     initDrag();
     tick();
