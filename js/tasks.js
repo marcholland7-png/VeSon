@@ -350,12 +350,50 @@
     if (name && name.trim()) { projects.push({ id: uid(), name: name.trim(), color: null, createdAt: today() }); save(); render(); }
   }
 
+  /* ── Read model for other surfaces (Home briefing, future AI) ── */
+  function projName(t) {
+    if (!t.projectId) return '';
+    var p = projects.filter(function (x) { return x.id === t.projectId; })[0];
+    return p ? p.name : '';
+  }
+  function briefItem(t) {
+    var d = today();
+    var over = !!(t.dueDate && t.dueDate < d);
+    var dueLabel = '';
+    if (t.dueDate) dueLabel = over ? 'Overdue' : (t.dueDate <= addDays(d, 1) ? fmtDate(t.dueDate) : fmtDate(t.dueDate));
+    return { id: t.id, title: t.title, priority: t.priority, project: projName(t), dueLabel: dueLabel, overdue: over };
+  }
+
   /* ── Public API ── */
   window.VesonTasks = {
     init: function () {
       if (!document.getElementById('view-tasks')) return;
       load(); seed(); bind(); render();
     },
-    refresh: function () { load(); render(); }
+    refresh: function () { load(); render(); },
+
+    // Compact "what needs attention" surface for Home (and later the AI).
+    // Focus = overdue first, then today's tasks, smart-ranked, top 5.
+    getBriefing: function () {
+      if (!tasks.length) load();
+      var od = overdue();
+      var focusPool = od.concat(todayList());
+      focusPool.sort(function (a, b) { return focusScore(b) - focusScore(a); });
+      return {
+        focus: focusPool.slice(0, 5).map(briefItem),
+        overdueCount: od.length,
+        todayCount: todayList().length,
+        openCount: tasks.filter(isTodo).length,
+        donePct: tasks.length ? Math.round(completed().length / tasks.length * 100) : 0
+      };
+    },
+
+    // Complete a task from another surface (Home focus list).
+    complete: function (id) {
+      var t = byId(id); if (!t) return;
+      t.status = (t.status === 'done') ? 'todo' : 'done';
+      t.completedAt = t.status === 'done' ? today() : null;
+      save(); render();
+    }
   };
 })();

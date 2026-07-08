@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/system.css">
 <link rel="stylesheet" href="css/tasks.css">
 </head>
 <body>
@@ -25,12 +26,12 @@
 
     <nav class="top-tabs">
       <span class="top-tab nav-trigger active" data-view="home">Home</span>
-      <span class="top-tab nav-trigger" data-view="system">System</span>
       <span class="top-tab nav-trigger" data-view="tasks">Tasks</span>
+      <span class="top-tab nav-trigger" data-view="finance">Finance</span>
       <span class="top-tab nav-trigger" data-view="calendar">Calendar</span>
-      <span class="top-tab nav-trigger" data-view="data">Data</span>
-      <span class="top-tab nav-trigger" data-view="apps">Apps</span>
-      <span class="top-tab nav-trigger" data-view="comms">Comms</span>
+      <span class="top-tab nav-trigger" data-view="inbox">Inbox</span>
+      <span class="top-tab nav-trigger" data-view="health">Health</span>
+      <span class="top-tab nav-trigger" data-view="ai">AI</span>
       <span class="top-tab nav-trigger" data-view="settings">Settings</span>
     </nav>
 
@@ -51,23 +52,23 @@
       <button class="rail-btn nav-trigger active" data-view="home" type="button" title="Home">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5L12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h5v-6h2v6h5a1 1 0 0 0 1-1v-9"/></svg>
       </button>
-      <button class="rail-btn nav-trigger" data-view="system" type="button" title="System">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
-      </button>
       <button class="rail-btn nav-trigger" data-view="tasks" type="button" title="Tasks">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1z"/><path d="M8.5 12l1.8 1.8L14.5 10"/></svg>
+      </button>
+      <button class="rail-btn nav-trigger" data-view="finance" type="button" title="Finance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M16 14.5h2"/></svg>
       </button>
       <button class="rail-btn nav-trigger" data-view="calendar" type="button" title="Calendar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
       </button>
-      <button class="rail-btn nav-trigger" data-view="data" type="button" title="Data">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-8"/><path d="M22 20H2"/></svg>
+      <button class="rail-btn nav-trigger" data-view="inbox" type="button" title="Inbox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-8h11L20 13"/><path d="M4 13h5l1.2 2.2h3.6L15 13h5v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/></svg>
       </button>
-      <button class="rail-btn nav-trigger" data-view="apps" type="button" title="Apps">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
+      <button class="rail-btn nav-trigger" data-view="health" type="button" title="Health">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-5 3 10 2-6 1.5 3H21"/></svg>
       </button>
-      <button class="rail-btn nav-trigger" data-view="comms" type="button" title="Comms">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/></svg>
+      <button class="rail-btn nav-trigger" data-view="ai" type="button" title="AI">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L18.7 9.6l-4.9 1.8L12 16.3l-1.8-4.9L5.3 9.6l4.9-1.7z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>
       </button>
       <button class="rail-btn nav-trigger" data-view="settings" type="button" title="Settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.9 7.9 0 0 0 0-2l2-1.4-2-3.4-2.3.9a8 8 0 0 0-1.7-1L15 3h-4l-.4 2.1a8 8 0 0 0-1.7 1l-2.3-.9-2 3.4L6.6 11a7.9 7.9 0 0 0 0 2l-2 1.4 2 3.4 2.3-.9a8 8 0 0 0 1.7 1L11 21h4l.4-2.1a8 8 0 0 0 1.7-1l2.3.9 2-3.4z"/></svg>
@@ -85,172 +86,46 @@
       <section class="view active" id="view-home">
         <div class="greeting">
           <h1 id="greeting">Good morning, Marc</h1>
-          <p class="subtext">How can I assist you today?</p>
+          <p class="subtext" id="homeBrief">Getting your day ready…</p>
         </div>
 
-        <div class="dash-canvas" id="dashCanvas">
+        <div class="vs-page home-page">
+          <div class="vs-grid vs-grid-4 home-stats" id="homeStats"></div>
 
-          <div class="dash-card card" data-card="quick">
-            <div class="card-header">
-              <h2>Quick Actions</h2>
-              <span class="card-dots">&#8226;&#8226;&#8226;</span>
-            </div>
-            <div class="qa-list">
-              <button class="qa-btn" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
-                Reply to emails
-              </button>
-              <button class="qa-btn" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-                Research competitors
-              </button>
-              <button class="qa-btn" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                Prepare presentation
-              </button>
-              <button class="qa-btn" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15.5L13.5 12V5.5a1.5 1.5 0 0 0-3 0V12L3 15.5V18l7.5-2v4L8 21.5V23l4-1 4 1v-1.5L13.5 20v-4l7.5 2z"/></svg>
-                Book flight to Sydney
-              </button>
-              <button class="qa-btn" type="button">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 10a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg>
-                Call with supplier
-              </button>
-            </div>
-          </div>
-
-          <div class="dash-card card" data-card="status">
-            <div class="card-header">
-              <h2>System Status</h2>
-              <span class="card-dots">&#8226;&#8226;&#8226;</span>
-            </div>
-            <div class="status-row">
-              <span class="status-label">CPU</span>
-              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,16 12,12 24,15 36,9 48,13 60,7 72,11 84,6 100,10"/></svg>
-              <span class="status-value">27%</span>
-            </div>
-            <div class="status-row">
-              <span class="status-label">RAM</span>
-              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,12 12,14 24,9 36,13 48,8 60,12 72,7 84,12 100,8"/></svg>
-              <span class="status-value">46%</span>
-            </div>
-            <div class="status-row">
-              <span class="status-label">Storage</span>
-              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,14 12,13 24,14 36,12 48,13 60,11 72,12 84,10 100,11"/></svg>
-              <span class="status-value">72%</span>
-            </div>
-            <div class="status-row">
-              <span class="status-label">Network</span>
-              <svg class="sparkline" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline points="0,18 12,8 24,14 36,6 48,12 60,4 72,10 84,5 100,9"/></svg>
-              <span class="status-value">91%</span>
-            </div>
-          </div>
-
-          <div class="dash-card card" data-card="tasks">
-            <div class="card-header">
-              <h2>Active Tasks</h2>
-              <span class="card-dots">&#8226;&#8226;&#8226;</span>
-            </div>
-            <div class="tasks-widget">
-              <div class="ring-wrap">
-                <svg class="ring" viewBox="0 0 64 64">
-                  <circle class="ring-bg" cx="32" cy="32" r="26"/>
-                  <circle class="ring-fg" cx="32" cy="32" r="26"/>
-                </svg>
-                <div class="ring-label"><strong>68%</strong><span>complete</span></div>
-              </div>
-              <ul class="task-list">
-                <li><span class="task-check done"></span>Reply to emails</li>
-                <li><span class="task-check done"></span>Research competitors</li>
-                <li><span class="task-check"></span>Prepare presentation</li>
-                <li><span class="task-check"></span>Book flight to Sydney</li>
-                <li><span class="task-check"></span>Call with supplier</li>
-              </ul>
-            </div>
-            <span class="card-link card-footer-link" data-view="tasks">
-              View All Tasks
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-            </span>
-          </div>
-
-          <div class="dash-card card" data-card="events">
-            <div class="card-header">
-              <h2>Upcoming Events</h2>
-              <span class="card-dots">&#8226;&#8226;&#8226;</span>
-            </div>
-            <div class="card-body" id="eventsBody">
-              <p class="empty-state">
-                No sync code set yet.<br>
-                <span class="link-btn" data-view="settings">Go to Settings &rarr;</span>
-              </p>
-            </div>
-            <span class="card-link card-footer-link" data-view="calendar">
-              View Calendar
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-            </span>
-          </div>
-
-          <div class="dash-card card" data-card="earnings">
-            <div class="card-header">
-              <h2>Shift &amp; Earnings</h2>
-              <span class="card-dots">&#8226;&#8226;&#8226;</span>
-            </div>
-            <div class="card-body" id="earningsBody">
-              <p class="empty-state">
-                No sync code set yet.<br>
-                <span class="link-btn" data-view="settings">Go to Settings &rarr;</span>
-              </p>
-            </div>
-            <span class="card-link card-footer-link" data-view="data">
-              View Hours &amp; Pay
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-            </span>
-          </div>
-
-          <div class="dash-card card" data-card="insight">
-            <div class="card-header">
-              <h2>AI Insight</h2>
-              <span class="card-dots">&#8226;&#8226;&#8226;</span>
-            </div>
-            <p class="insight-text">You've been most productive between <strong>9AM&ndash;11AM</strong> this week. Consider scheduling deep work in this time block.</p>
-            <svg class="insight-chart" viewBox="0 0 260 56" preserveAspectRatio="none" aria-hidden="true">
-              <path class="chart-fill" d="M0,48 L20,42 L40,45 L60,30 L80,36 L100,14 L120,26 L140,20 L160,34 L180,28 L200,40 L220,32 L240,44 L260,38 L260,56 L0,56 Z"/>
-              <path class="chart-line" d="M0,48 L20,42 L40,45 L60,30 L80,36 L100,14 L120,26 L140,20 L160,34 L180,28 L200,40 L220,32 L240,44 L260,38"/>
-            </svg>
-            <div class="chart-axis"><span>6AM</span><span>12PM</span><span>6PM</span><span>12AM</span></div>
-          </div>
-
-          <div class="dash-card card np-card" data-card="nowplaying">
-            <div class="card-header">
-              <h2>Now Playing</h2>
-              <span class="card-dots">&#8226;&#8226;&#8226;</span>
-            </div>
-            <div class="np-track">
-              <div class="np-art"></div>
-              <div class="np-meta">
-                <div class="np-title">The Diary of Jane</div>
-                <div class="np-artist">Breaking Benjamin</div>
+          <div class="home-cols">
+            <div class="home-col-main">
+              <div class="card">
+                <div class="card-header">
+                  <h2>Today's Focus</h2>
+                  <span class="card-link" data-view="tasks">Open Tasks
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                  </span>
+                </div>
+                <div class="home-focus" id="homeFocus"></div>
               </div>
             </div>
-            <div class="np-controls">
-              <button type="button" title="Shuffle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h3.5c5.5 0 5.5 12 11 12H21"/><path d="M3 18h3.5c2.2 0 3.6-1.9 4.9-4M21 6h-3.5c-2.3 0-3.7 2-5 4.1"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3"/></svg></button>
-              <button type="button" title="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5l-10 7 10 7z"/></svg></button>
-              <button type="button" class="np-play" title="Play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7z"/></svg></button>
-              <button type="button" title="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5l10 7-10 7z"/></svg></button>
-              <button type="button" title="Volume"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6.5 9H3v6h3.5L11 19z" fill="currentColor" stroke="none"/><path d="M15 9.5a4 4 0 0 1 0 5M17.5 7a7.5 7.5 0 0 1 0 10"/></svg></button>
+
+            <div class="home-col-side">
+              <div class="card">
+                <div class="card-header">
+                  <h2>Today</h2>
+                  <span class="card-link" data-view="finance">Finance
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                  </span>
+                </div>
+                <div class="home-shift" id="homeShift"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h2>Upcoming</h2>
+                  <span class="card-link" data-view="calendar">Calendar
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                  </span>
+                </div>
+                <div class="home-upcoming" id="homeUpcoming"></div>
+              </div>
             </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ━━━ Placeholder views ━━━ -->
-      <section class="view" id="view-system">
-        <div class="cards-grid">
-          <div class="card placeholder-card">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg>
-            <h2>System</h2>
-            <p>Coming soon.</p>
           </div>
         </div>
       </section>
@@ -460,11 +335,19 @@
         <div class="cal-overlay" id="calOverlay"></div>
       </section>
 
-      <section class="view" id="view-data">
-        <div class="hours-page">
+      <section class="view" id="view-finance">
+        <div class="vs-page finance-page">
+          <div class="vs-page-head">
+            <div>
+              <h1 class="vs-page-title">Finance</h1>
+              <p class="vs-page-sub">How is your money doing?</p>
+            </div>
+          </div>
+
           <div class="card">
             <div class="card-header">
-              <h2>Hours &amp; Pay</h2>
+              <h2>Work Earnings</h2>
+              <span class="card-link" data-view="settings">Sync settings</span>
             </div>
             <div class="card-body">
               <div class="earnings-grid" id="hoursSummaryGrid">
@@ -476,6 +359,7 @@
               <div class="earnings-stamp" id="hoursStamp"></div>
             </div>
           </div>
+
           <div class="card">
             <div class="card-header">
               <h2>Shift History</h2>
@@ -491,25 +375,88 @@
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section class="view" id="view-apps">
-        <div class="cards-grid">
-          <div class="card placeholder-card">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
-            <h2>Apps</h2>
-            <p>Coming soon.</p>
+          <div>
+            <div class="vs-section-head">
+              <h2 class="vs-section-title">Coming to Finance</h2>
+            </div>
+            <div class="vs-grid vs-grid-4 finance-soon">
+              <div class="card soon-card">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M17 7H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H6"/></svg>
+                <span class="soon-label">Income &amp; Expenses</span>
+              </div>
+              <div class="card soon-card">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 5v4h-4"/><path d="M12 8v4l2.5 2.5"/></svg>
+                <span class="soon-label">Recurring &amp; Bills</span>
+              </div>
+              <div class="card soon-card">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+                <span class="soon-label">Cashflow Forecast</span>
+              </div>
+              <div class="card soon-card">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                <span class="soon-label">Savings Goals</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section class="view" id="view-comms">
-        <div class="cards-grid">
-          <div class="card placeholder-card">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/></svg>
-            <h2>Comms</h2>
-            <p>Coming soon.</p>
+      <section class="view" id="view-inbox">
+        <div class="vs-page">
+          <div class="vs-page-head">
+            <div>
+              <h1 class="vs-page-title">Inbox</h1>
+              <p class="vs-page-sub">What actually requires action?</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="vs-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-8h11L20 13"/><path d="M4 13h5l1.2 2.2h3.6L15 13h5v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/></svg>
+              <h3>Nothing to triage yet</h3>
+              <p>Connect an email account and VESON will surface only the messages that actually need a reply or a decision.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-health">
+        <div class="vs-page">
+          <div class="vs-page-head">
+            <div>
+              <h1 class="vs-page-title">Health</h1>
+              <p class="vs-page-sub">How are you progressing?</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="vs-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2-5 3 10 2-6 1.5 3H21"/></svg>
+              <h3>Track what matters</h3>
+              <p>Sleep, training and habits will live here — turned into progress you can feel, not just numbers.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-ai">
+        <div class="vs-page ai-page">
+          <div class="vs-page-head">
+            <div>
+              <h1 class="vs-page-title">Assistant</h1>
+              <p class="vs-page-sub">Help me manage my life.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="vs-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.9L18.7 9.6l-4.9 1.8L12 16.3l-1.8-4.9L5.3 9.6l4.9-1.7z"/></svg>
+              <h3>Ask VESON anything</h3>
+              <p>Your assistant knows your shifts, pay and calendar. Ask it from the command bar at the bottom of any screen.</p>
+            </div>
+            <div class="ai-suggests">
+              <button class="vs-chip ai-suggest" type="button">How much have I earned this month?</button>
+              <button class="vs-chip ai-suggest" type="button">What's on my calendar this week?</button>
+              <button class="vs-chip ai-suggest" type="button">When is my next shift?</button>
+            </div>
           </div>
         </div>
       </section>
@@ -526,15 +473,6 @@
               <input type="text" id="syncCodeInput" class="sync-input" placeholder="e.g. A3B7C2D1" maxlength="8" autocomplete="off">
               <button class="btn-save" id="saveSyncBtn" type="button">Save</button>
               <p class="sync-status" id="syncStatus"></p>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header">
-              <h2>Dashboard</h2>
-            </div>
-            <div class="card-body">
-              <p class="settings-note">Drag the cards on the Home screen to rearrange them. Your layout is saved on this device.</p>
-              <button class="btn-ghost" id="resetLayoutBtn" type="button">Reset Layout</button>
             </div>
           </div>
           <div class="card">
@@ -575,6 +513,7 @@
 <script src="js/calendar.js"></script>
 <script src="js/earnings.js"></script>
 <script src="js/tasks.js"></script>
+<script src="js/home.js"></script>
 <script src="js/app.js"></script>
 <script src="js/assistant.js"></script>
 </body>

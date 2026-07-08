@@ -3,7 +3,6 @@
 
   var THEME_KEY = 'veson_theme';
   var SYNC_KEY = 'veson_sync_code';
-  var LAYOUT_KEY = 'veson_layout_v1';
 
   /* ── Theme ── */
   function applyTheme(theme) {
@@ -41,12 +40,22 @@
     document.querySelectorAll('.view').forEach(function (section) {
       section.classList.toggle('active', section.id === 'view-' + view);
     });
+    // Landing on Home re-composes the briefing so it reflects the latest
+    // tasks / shifts / events without a page reload.
+    if (view === 'home' && window.VesonHome) window.VesonHome.refresh();
   }
 
   function initRouting() {
     document.addEventListener('click', function (e) {
       var trigger = e.target.closest('[data-view]');
-      if (trigger) setView(trigger.dataset.view);
+      if (trigger) { setView(trigger.dataset.view); return; }
+
+      // Assistant page suggestion chips → drop into the command bar, ready to send
+      var suggest = e.target.closest('.ai-suggest');
+      if (suggest) {
+        var cmd = document.getElementById('commandInput');
+        if (cmd) { cmd.value = suggest.textContent.trim(); cmd.focus(); }
+      }
     });
   }
 
@@ -89,90 +98,6 @@
     input.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') save();
     });
-
-    document.getElementById('resetLayoutBtn').addEventListener('click', resetLayout);
-  }
-
-  /* ── Draggable dashboard cards ── */
-  function dragEnabled() {
-    return window.innerWidth > 1100;
-  }
-
-  function saveLayout() {
-    var canvas = document.getElementById('dashCanvas');
-    var layout = {};
-    canvas.querySelectorAll('.dash-card').forEach(function (card) {
-      layout[card.dataset.card] = {
-        left: (card.offsetLeft / canvas.clientWidth) * 100,
-        top: (card.offsetTop / canvas.clientHeight) * 100,
-      };
-    });
-    localStorage.setItem(LAYOUT_KEY, JSON.stringify(layout));
-  }
-
-  function applyLayout() {
-    var canvas = document.getElementById('dashCanvas');
-    var raw = localStorage.getItem(LAYOUT_KEY);
-    if (!raw) return;
-    var layout;
-    try { layout = JSON.parse(raw); } catch (e) { return; }
-    Object.keys(layout).forEach(function (id) {
-      var card = canvas.querySelector('[data-card="' + id + '"]');
-      if (!card || typeof layout[id].left !== 'number') return;
-      card.style.left = layout[id].left + '%';
-      card.style.top = layout[id].top + '%';
-      card.style.right = 'auto';
-    });
-  }
-
-  function resetLayout() {
-    localStorage.removeItem(LAYOUT_KEY);
-    document.querySelectorAll('.dash-card').forEach(function (card) {
-      card.style.left = '';
-      card.style.top = '';
-      card.style.right = '';
-    });
-  }
-
-  function initDrag() {
-    var canvas = document.getElementById('dashCanvas');
-    var drag = null;
-
-    canvas.addEventListener('pointerdown', function (e) {
-      if (!dragEnabled()) return;
-      var card = e.target.closest('.dash-card');
-      if (!card) return;
-      // Let interactive elements work normally
-      if (e.target.closest('button, input, [data-view], .link-btn')) return;
-      drag = {
-        card: card,
-        dx: e.clientX - card.offsetLeft,
-        dy: e.clientY - card.offsetTop,
-      };
-      card.classList.add('dragging');
-      card.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    });
-
-    canvas.addEventListener('pointermove', function (e) {
-      if (!drag) return;
-      var maxX = Math.max(0, canvas.clientWidth - drag.card.offsetWidth);
-      var maxY = Math.max(0, canvas.clientHeight - drag.card.offsetHeight);
-      var x = Math.min(Math.max(0, e.clientX - drag.dx), maxX);
-      var y = Math.min(Math.max(0, e.clientY - drag.dy), maxY);
-      drag.card.style.left = x + 'px';
-      drag.card.style.top = y + 'px';
-      drag.card.style.right = 'auto';
-    });
-
-    function endDrag() {
-      if (!drag) return;
-      drag.card.classList.remove('dragging');
-      saveLayout();
-      drag = null;
-    }
-    canvas.addEventListener('pointerup', endDrag);
-    canvas.addEventListener('pointercancel', endDrag);
   }
 
   /* ── Command bar is handled by js/assistant.js ── */
@@ -182,8 +107,6 @@
     initTheme();
     initRouting();
     initSettings();
-    applyLayout();
-    initDrag();
     tick();
     setInterval(tick, 30000);
     if (window.VesonCalendar) window.VesonCalendar.init();
@@ -192,5 +115,6 @@
       window.VesonEarnings.init();
       window.VesonEarnings.initHoursPage();
     }
+    if (window.VesonHome) window.VesonHome.init();
   });
 })();
