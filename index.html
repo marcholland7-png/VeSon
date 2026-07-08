@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/tasks.css">
 </head>
 <body>
 
@@ -255,11 +256,51 @@
       </section>
 
       <section class="view" id="view-tasks">
-        <div class="cards-grid">
-          <div class="card placeholder-card">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1z"/><path d="M8.5 12l1.8 1.8L14.5 10"/></svg>
-            <h2>Tasks</h2>
-            <p>Coming soon.</p>
+        <div class="tasks-layout">
+
+          <aside class="tasks-sidebar card">
+            <button class="tk-quickadd-btn" id="tkQuickAddBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Quick Add<span class="tk-kbd">N</span>
+            </button>
+            <nav class="tk-nav" id="tkNav"></nav>
+            <div class="tk-side-section">
+              <div class="tk-side-head">Projects <button class="tk-mini-add" id="tkAddProject" type="button" title="New project">+</button></div>
+              <div class="tk-projects" id="tkProjects"></div>
+            </div>
+            <div class="tk-side-stats" id="tkSideStats"></div>
+          </aside>
+
+          <div class="tasks-main">
+            <div class="tk-toolbar">
+              <div class="tk-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                <input type="text" id="tkSearch" placeholder="Search tasks…">
+              </div>
+              <div class="tk-filters">
+                <button class="tk-chip active" data-tkfilter="all" type="button">All</button>
+                <button class="tk-chip" data-tkfilter="urgent" type="button">Urgent</button>
+                <button class="tk-chip" data-tkfilter="high" type="button">High</button>
+                <button class="tk-chip" data-tkfilter="medium" type="button">Medium</button>
+              </div>
+              <select class="tk-sort" id="tkSort">
+                <option value="smart">Smart</option>
+                <option value="deadline">Deadline</option>
+                <option value="priority">Priority</option>
+                <option value="created">Newest</option>
+              </select>
+            </div>
+            <div class="tk-stats" id="tkStats"></div>
+            <div class="tk-content" id="tkContent"></div>
+          </div>
+
+        </div>
+
+        <div class="tk-qa-overlay" id="tkQaOverlay" hidden>
+          <div class="tk-qa card">
+            <input type="text" id="tkQaInput" placeholder="Add a task…  e.g. Call landlord tomorrow !urgent #home" autocomplete="off">
+            <div class="tk-qa-preview" id="tkQaPreview"></div>
+            <div class="tk-qa-hint">Enter to add · Esc to close · try dates, !priority, #tags</div>
           </div>
         </div>
       </section>
@@ -533,6 +574,7 @@
 
 <script src="js/calendar.js"></script>
 <script src="js/earnings.js"></script>
+<script src="js/tasks.js"></script>
 <script src="js/app.js"></script>
 <script src="js/assistant.js"></script>
 </body>

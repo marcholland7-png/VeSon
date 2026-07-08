@@ -187,6 +187,7 @@
     tick();
     setInterval(tick, 30000);
     if (window.VesonCalendar) window.VesonCalendar.init();
+    if (window.VesonTasks) window.VesonTasks.init();
     if (window.VesonEarnings) {
       window.VesonEarnings.init();
       window.VesonEarnings.initHoursPage();

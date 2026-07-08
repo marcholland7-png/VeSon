@@ -1,0 +1,20 @@
+{
+  "name": "veson",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "VeSon — personal operating system. Typed task core + static UI.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build:core": "tsc",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}
