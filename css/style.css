@@ -1332,6 +1332,22 @@ body.light .greeting .subtext { text-shadow: none; }
 .soon-card { opacity: 0.9; transition: opacity 0.2s ease, border-color 0.2s ease; }
 .soon-card:hover { opacity: 1; border-color: var(--accent); }
 
+/* ── Finance · Monthly breakdown ── */
+.fin-months { display: flex; flex-direction: column; }
+.fin-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 2px;
+}
+.fin-month + .fin-month { border-top: 1px solid var(--surface-border); }
+.fin-month-label { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.fin-month-meta { display: block; margin-top: 3px; font-size: 0.68rem; font-weight: 500; color: var(--muted); letter-spacing: 0.01em; }
+.fin-month-figs { text-align: right; flex-shrink: 0; }
+.fin-month-net { display: block; font-size: 1.05rem; font-weight: 800; color: var(--text); letter-spacing: -0.01em; }
+.fin-month-gross { display: block; margin-top: 2px; font-size: 0.66rem; color: var(--muted); }
+
 /* ── Assistant page suggestions ── */
 .ai-suggests {
   display: flex;
