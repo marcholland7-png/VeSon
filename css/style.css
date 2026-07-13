@@ -1387,6 +1387,41 @@ body.light .greeting .subtext { text-shadow: none; }
 }
 .fin-month-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 
+/* ── Finance · Job labels ── */
+.fin-job-select {
+  padding: 4px 8px;
+  border-radius: var(--r-xs);
+  background: var(--fill-soft, rgba(127,127,140,0.08));
+  border: 1px solid var(--surface-border);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.fin-job-select:hover { border-color: var(--muted); }
+.fin-job-select:focus { border-color: var(--accent); }
+
+.fin-jobsplit { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.fin-jobsplit:empty { display: none; }
+.fin-jobrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: var(--r-sm);
+  background: var(--fill-soft, rgba(127,127,140,0.08));
+  border: 1px solid var(--surface-border);
+  font-size: 0.8rem;
+}
+.fin-jobname { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--text); }
+.fin-jobdot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.fin-jobfigs { color: var(--muted); font-weight: 500; }
+.fin-holiday { color: var(--accent-text); }
+
 /* ── Assistant page suggestions ── */
 .ai-suggests {
   display: flex;

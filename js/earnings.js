@@ -5,22 +5,50 @@
   var SUPABASE_KEY = 'sb_publishable_0MIMm7jy7QykSBBBOZb5nw_wLaGbnoN';
   var SYNC_KEY = 'veson_sync_code';
   var JOBS_KEY = 'veson_jobs_v1';
+  var SHIFT_JOBS_KEY = 'veson_shift_jobs_v1'; // per-shift manual job overrides
 
-  // v1 defaults. User can override by writing veson_jobs_v1 in localStorage
-  // (Settings UI will follow later). Rate matches what actually hits the
-  // bank on the June '26 payslip (Salaris "Waarde" 17,00, not the base
-  // uurloon of 14,71 — the 17,00 already rolls in ORT for evening shifts).
+  // Two workplaces. Poolbar = De Gracht (shifts arrive via Eitje sync).
+  // Woostock = added via Cowork from DISH screenshots. `keywords` let a shift
+  // be auto-attributed from its team/source; a manual override always wins.
+  // Poolbar rate = 17,00 (June '26 payslip; already rolls in ORT for nights).
+  // Woostock = 17,00/hr + ~17% holiday pay accrual.
   var DEFAULT_JOBS = [
     {
       id: 'de_gracht',
-      name: 'De Gracht',
+      name: 'Poolbar',
       team: 'De Gracht Vast',
+      keywords: ['gracht', 'pool', 'eitje'],
+      color: '#42a5f5',
       hourlyRate: 17.00,
       calcMode: 'flat',
       flatNetRate: 0.919,
+      holidayPayRate: 0,
       hasLHKorting: true
+    },
+    {
+      id: 'woostock',
+      name: 'Woostock',
+      team: 'Woostock',
+      keywords: ['woostock', 'woodstock', 'dish'],
+      color: '#ab47bc',
+      hourlyRate: 17.00,
+      calcMode: 'flat',
+      flatNetRate: 0.919,
+      holidayPayRate: 0.17,
+      hasLHKorting: false
     }
   ];
+
+  /* ── Per-shift job overrides (localStorage) ── */
+  var shiftJobOverrides = null;
+  function loadOverrides() {
+    if (shiftJobOverrides) return shiftJobOverrides;
+    try { shiftJobOverrides = JSON.parse(localStorage.getItem(SHIFT_JOBS_KEY) || '{}'); }
+    catch (e) { shiftJobOverrides = {}; }
+    return shiftJobOverrides;
+  }
+  function saveOverrides() { localStorage.setItem(SHIFT_JOBS_KEY, JSON.stringify(loadOverrides())); }
+  function shiftSig(s) { return s.date + '|' + (s.start || '') + '|' + (s.end || ''); }
 
   // Swappable per-shift calc. v2 will add a proper cumulative NL loonheffing
   // model with LH-korting + arbeidskorting phase-out; the shape here is
@@ -50,11 +78,25 @@
     return (end - start) / 3600000;
   }
 
+  function jobById(jobs, id) { return jobs.find(function (j) { return j.id === id; }); }
+
   function jobForShift(shift, jobs) {
-    var match = jobs.find(function (j) {
-      return shift.team && j.team && shift.team.indexOf(j.team) !== -1;
+    // 1. Manual override set by the user in the shift table.
+    var ov = loadOverrides()[shiftSig(shift)];
+    if (ov) { var j = jobById(jobs, ov); if (j) return j; }
+    // 2. Auto-detect from the shift's own fields (team / source / workplace).
+    var mark = String(shift.job || shift.workplace || shift.source || shift.team || '').toLowerCase();
+    if (mark) {
+      var kw = jobs.find(function (job) {
+        return (job.keywords || []).some(function (k) { return mark.indexOf(k) !== -1; });
+      });
+      if (kw) return kw;
+    }
+    // 3. Legacy exact-team match, else default to the first job (Poolbar).
+    var team = jobs.find(function (job) {
+      return shift.team && job.team && shift.team.indexOf(job.team) !== -1;
     });
-    return match || jobs[0];
+    return team || jobs[0];
   }
 
   function sumRange(shifts, jobs, fromDate, toDate) {
@@ -223,8 +265,24 @@
     }).join('');
   }
 
+  // Per-workplace totals for a month (job label resolved incl. overrides).
+  function monthTotalsByJob(shifts, jobs, key) {
+    var res = {};
+    shiftsInMonth(shifts, key).forEach(function (s) {
+      var job = jobForShift(s, jobs);
+      if (!res[job.id]) res[job.id] = { job: job, hours: 0, gross: 0, net: 0, count: 0 };
+      var hrs = shiftHours(s);
+      var gross = hrs * job.hourlyRate;
+      var pay = (calcFns[job.calcMode] || calcFns.flat)(gross, job);
+      var r = res[job.id];
+      r.hours += hrs; r.gross += pay.gross; r.net += pay.net; r.count += 1;
+    });
+    return res;
+  }
+
   function renderMonthSummary(shifts, jobs, key) {
     var grid = document.getElementById('hoursSummaryGrid');
+    var split = document.getElementById('finJobSplit');
     var title = document.getElementById('finSummaryTitle');
     if (!grid) return;
     var cur = currentMonthKey();
@@ -232,6 +290,7 @@
     var list = shiftsInMonth(shifts, key);
     if (!list.length) {
       grid.innerHTML = '<p class="empty-state">No shifts in ' + monthKeyLabel(key) + '.</p>';
+      if (split) split.innerHTML = '';
       return;
     }
     var b = monthBounds(key);
@@ -247,6 +306,32 @@
         '<span class="cell-value">' + fmtMoney(tot.gross) + '</span>' +
         '<span class="cell-sub">before deductions</span>' +
       '</div>';
+
+    if (split) {
+      var byJob = monthTotalsByJob(shifts, jobs, key);
+      var ids = Object.keys(byJob);
+      if (ids.length < 2) {
+        split.innerHTML = '';
+      } else {
+        split.innerHTML = ids.map(function (id) {
+          var r = byJob[id];
+          var holiday = r.gross * (r.job.holidayPayRate || 0);
+          return '<div class="fin-jobrow">' +
+            '<span class="fin-jobname"><span class="fin-jobdot" style="background:' + (r.job.color || 'var(--accent)') + '"></span>' + r.job.name + '</span>' +
+            '<span class="fin-jobfigs">' + fmtMoney(r.net) + ' net · ' + r.hours.toFixed(1) + 'h' +
+              (holiday > 0 ? ' <span class="fin-holiday">+' + fmtMoney(holiday) + ' holiday</span>' : '') + '</span>' +
+          '</div>';
+        }).join('');
+      }
+    }
+  }
+
+  function jobSelectHtml(s, jobs, current) {
+    return '<select class="fin-job-select" data-sig="' + shiftSig(s) + '">' +
+      jobs.map(function (j) {
+        return '<option value="' + j.id + '"' + (j.id === current.id ? ' selected' : '') + '>' + j.name + '</option>';
+      }).join('') +
+    '</select>';
   }
 
   function renderMonthShifts(shifts, jobs, key) {
@@ -258,7 +343,7 @@
       return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
     });
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="muted">No shifts this month.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="muted">No shifts this month.</td></tr>';
       return;
     }
     tbody.innerHTML = list.map(function (s) {
@@ -272,6 +357,7 @@
       return '<tr>' +
         '<td>' + dateLabel + '</td>' +
         '<td>' + s.start + '–' + s.end + '</td>' +
+        '<td class="fin-job-cell">' + jobSelectHtml(s, jobs, job) + '</td>' +
         '<td>' + hrs.toFixed(1) + '</td>' +
         '<td class="muted">' + (s.status || '') + '</td>' +
         '<td>' + fmtMoney(gross) + '</td>' +
@@ -321,6 +407,16 @@
     var next = document.getElementById('finNext');
     if (prev) prev.addEventListener('click', function () { move(1); });
     if (next) next.addEventListener('click', function () { move(-1); });
+
+    // Per-shift job label changes (delegated — tbody is re-rendered often).
+    var tbody = document.getElementById('hoursTableBody');
+    if (tbody) tbody.addEventListener('change', function (e) {
+      var sel = e.target.closest('.fin-job-select');
+      if (!sel) return;
+      loadOverrides()[sel.dataset.sig] = sel.value;
+      saveOverrides();
+      renderFinance();
+    });
   }
 
   function showEmpty(msg, withLink) {
@@ -407,18 +503,18 @@
       var code = localStorage.getItem(SYNC_KEY);
       if (!code) {
         grid.innerHTML = '<p class="empty-state">No sync code set yet.<br><span class="link-btn" data-view="settings">Go to Settings &rarr;</span></p>';
-        tbody.innerHTML = '<tr><td colspan="6" class="muted">No sync code set yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="muted">No sync code set yet.</td></tr>';
         if (sel) sel.innerHTML = '<option>' + monthKeyLabel(currentMonthKey()) + '</option>';
         return;
       }
-      tbody.innerHTML = '<tr><td colspan="6" class="muted">Loading…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="muted">Loading…</td></tr>';
       grid.innerHTML = '<p class="empty-state">Loading…</p>';
       fetchEitjeData(code).then(function (data) {
         financeState.data = data;
         financeState.jobs = jobs;
         renderFinance();
       }).catch(function () {
-        tbody.innerHTML = '<tr><td colspan="6" class="muted">Couldn\'t load Eitje data. Try again shortly.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="muted">Couldn\'t load Eitje data. Try again shortly.</td></tr>';
         grid.innerHTML = '<p class="empty-state">Couldn\'t load Eitje data. Try again shortly.</p>';
       });
     }
