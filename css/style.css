@@ -810,12 +810,12 @@ body.light .greeting .subtext { text-shadow: none; }
 }
 .cal-weekdays span {
   text-align: center;
-  font-size: 0.58rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 4px 0;
+  padding: 6px 0;
 }
 
 .cal-grid {
@@ -824,12 +824,12 @@ body.light .greeting .subtext { text-shadow: none; }
   gap: 6px;
 }
 .cal-cell {
-  min-height: 108px;
-  border-radius: 10px;
-  padding: 7px 6px;
+  min-height: 118px;
+  border-radius: 12px;
+  padding: 8px 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   cursor: pointer;
   border: 1px solid var(--surface-border);
   background: var(--surface);
@@ -838,22 +838,38 @@ body.light .greeting .subtext { text-shadow: none; }
 .cal-cell:not(.blank):hover { background: var(--surface-hover); }
 .cal-cell.blank { cursor: default; border-color: transparent; background: transparent; }
 .cal-cell.other-month { opacity: 0.4; }
-.cal-cell.today { border-color: var(--accent); }
-.cal-cell.drag-over { background: var(--accent-dim); border-color: var(--accent); }
-.cal-daynum { font-size: 0.78rem; font-weight: 600; flex-shrink: 0; }
-.cal-cell.today .cal-daynum { color: var(--accent-text); font-weight: 800; }
+.cal-cell.today { border-color: var(--accent-glow); background: var(--accent-dim); }
+.cal-cell.drag-over { background: var(--accent-glow); border-color: var(--accent); }
+.cal-daynum {
+  font-size: 0.94rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  letter-spacing: -0.01em;
+}
+.cal-cell.today .cal-daynum {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 0 12px var(--accent-glow);
+}
 
 .cal-chips { display: flex; flex-direction: column; gap: 3px; min-height: 0; overflow: hidden; }
 .cal-chip {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 6px;
-  border-radius: 5px;
-  border-left: 2px solid var(--chip-color, var(--accent));
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  border-left: 3px solid var(--chip-color, var(--accent));
   background: var(--chip-bg, var(--accent-dim));
   color: var(--chip-color, var(--accent-text));
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
