@@ -74,30 +74,42 @@
     return totals;
   }
 
-  // Group all shifts by calendar month → one figure set per month, newest first.
-  function monthlyBreakdown(shifts, jobs) {
-    var map = {};
-    shifts.forEach(function (s) {
-      if (!s.date) return;
-      var key = s.date.slice(0, 7); // YYYY-MM
-      if (!map[key]) map[key] = { hours: 0, gross: 0, net: 0, shifts: 0 };
-      var job = jobForShift(s, jobs);
-      var hrs = shiftHours(s);
-      var gross = hrs * job.hourlyRate;
-      var pay = (calcFns[job.calcMode] || calcFns.flat)(gross, job);
-      map[key].hours += hrs;
-      map[key].gross += pay.gross;
-      map[key].net += pay.net;
-      map[key].shifts += 1;
-    });
-    return Object.keys(map).sort().reverse().map(function (k) {
-      var d = new Date(k + '-01T00:00:00');
-      return {
-        key: k,
-        label: d.toLocaleDateString([], { month: 'long', year: 'numeric' }),
-        hours: map[k].hours, gross: map[k].gross, net: map[k].net, shifts: map[k].shifts
-      };
-    });
+  // Finance page is scoped to ONE selected month at a time (default: current).
+  var financeState = { key: null, data: null, jobs: null, bound: false };
+
+  function currentMonthKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+  function monthKeyOf(dateStr) { return dateStr ? dateStr.slice(0, 7) : ''; }
+  function monthKeyLabel(key) {
+    var y = +key.slice(0, 4), m = +key.slice(5, 7);
+    return new Date(y, m - 1, 1).toLocaleDateString([], { month: 'long', year: 'numeric' });
+  }
+  function monthBounds(key) {
+    var y = +key.slice(0, 4), m = +key.slice(5, 7) - 1;
+    return { start: new Date(y, m, 1), end: new Date(y, m + 1, 0, 23, 59, 59) };
+  }
+  function shiftsInMonth(shifts, key) {
+    return shifts.filter(function (s) { return monthKeyOf(s.date) === key; });
+  }
+  // Continuous list of month keys from the earliest shift up to the current
+  // month, newest first — so the dropdown has no gaps and always includes now.
+  function monthKeyRange(shifts) {
+    var cur = currentMonthKey();
+    var keys = shifts.map(function (s) { return monthKeyOf(s.date); }).filter(Boolean);
+    var minKey = keys.length ? keys.slice().sort()[0] : cur;
+    if (minKey > cur) minKey = cur;
+    var list = [];
+    var d = new Date(+minKey.slice(0, 4), +minKey.slice(5, 7) - 1, 1);
+    var end = new Date();
+    end = new Date(end.getFullYear(), end.getMonth(), 1);
+    while (d <= end) {
+      list.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+      d.setMonth(d.getMonth() + 1);
+    }
+    if (!list.length) list = [cur];
+    return list.reverse();
   }
 
   function loadJobs() {
@@ -201,71 +213,55 @@
     body.innerHTML = parts.join('');
   }
 
-  function renderMonthlyList(shifts, jobs) {
-    var wrap = document.getElementById('monthlyList');
-    if (!wrap) return;
-    var months = monthlyBreakdown(shifts, jobs);
-    if (!months.length) {
-      wrap.innerHTML = '<p class="empty-state">No shifts synced yet.</p>';
-      return;
-    }
-    wrap.innerHTML = months.map(function (m) {
-      return '<div class="fin-month">' +
-        '<div class="fin-month-label">' + m.label +
-          '<span class="fin-month-meta">' + m.shifts + (m.shifts === 1 ? ' shift' : ' shifts') +
-            ' · ' + m.hours.toFixed(1) + ' hrs</span>' +
-        '</div>' +
-        '<div class="fin-month-figs">' +
-          '<span class="fin-month-net">' + fmtMoney(m.net) + '</span>' +
-          '<span class="fin-month-gross">' + fmtMoney(m.gross) + ' gross</span>' +
-        '</div>' +
-      '</div>';
+  function renderMonthSelect(months, selectedKey) {
+    var sel = document.getElementById('finMonthSelect');
+    if (!sel) return;
+    var cur = currentMonthKey();
+    sel.innerHTML = months.map(function (k) {
+      var label = monthKeyLabel(k) + (k === cur ? ' · This month' : '');
+      return '<option value="' + k + '"' + (k === selectedKey ? ' selected' : '') + '>' + label + '</option>';
     }).join('');
   }
 
-  function renderHoursPage(data, jobs) {
+  function renderMonthSummary(shifts, jobs, key) {
     var grid = document.getElementById('hoursSummaryGrid');
-    var stamp = document.getElementById('hoursStamp');
-    var tbody = document.getElementById('hoursTableBody');
-    if (!grid || !tbody) return;
-
-    var shifts = (data && data.shifts) || [];
-    var today = startOfDay(new Date());
-    var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    var yearStart = new Date(today.getFullYear(), 0, 1);
-    var month = sumRange(shifts, jobs, monthStart, null);
-    var ytd = sumRange(shifts, jobs, yearStart, null);
-
-    grid.innerHTML =
-      '<div class="earnings-cell">' +
-        '<span class="cell-label">This month</span>' +
-        '<span class="cell-value">' + fmtMoney(month.net) + '</span>' +
-        '<span class="cell-sub">' + month.hours.toFixed(1) + ' hrs · ' + fmtMoney(month.gross) + ' gross</span>' +
-      '</div>' +
-      '<div class="earnings-cell">' +
-        '<span class="cell-label">Year to date</span>' +
-        '<span class="cell-value">' + fmtMoney(ytd.net) + '</span>' +
-        '<span class="cell-sub">' + ytd.hours.toFixed(1) + ' hrs · ' + fmtMoney(ytd.gross) + ' gross</span>' +
-      '</div>';
-
-    stamp.textContent = 'Last synced: ' + (data && data.updated_at
-      ? new Date(data.updated_at).toLocaleString([], {
-          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        })
-      : '—');
-
-    renderMonthlyList(shifts, jobs);
-
-    var sorted = shifts.slice().sort(function (a, b) {
-      return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
-    });
-
-    if (!sorted.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="muted">No shifts synced yet.</td></tr>';
+    var title = document.getElementById('finSummaryTitle');
+    if (!grid) return;
+    var cur = currentMonthKey();
+    if (title) title.textContent = (key === cur ? 'This Month' : monthKeyLabel(key));
+    var list = shiftsInMonth(shifts, key);
+    if (!list.length) {
+      grid.innerHTML = '<p class="empty-state">No shifts in ' + monthKeyLabel(key) + '.</p>';
       return;
     }
+    var b = monthBounds(key);
+    var tot = sumRange(shifts, jobs, b.start, b.end);
+    grid.innerHTML =
+      '<div class="earnings-cell">' +
+        '<span class="cell-label">Take-home (net)</span>' +
+        '<span class="cell-value">' + fmtMoney(tot.net) + '</span>' +
+        '<span class="cell-sub">' + tot.hours.toFixed(1) + ' hrs · ' + list.length + (list.length === 1 ? ' shift' : ' shifts') + '</span>' +
+      '</div>' +
+      '<div class="earnings-cell">' +
+        '<span class="cell-label">Gross</span>' +
+        '<span class="cell-value">' + fmtMoney(tot.gross) + '</span>' +
+        '<span class="cell-sub">before deductions</span>' +
+      '</div>';
+  }
 
-    tbody.innerHTML = sorted.map(function (s) {
+  function renderMonthShifts(shifts, jobs, key) {
+    var tbody = document.getElementById('hoursTableBody');
+    var title = document.getElementById('finHistoryTitle');
+    if (!tbody) return;
+    if (title) title.textContent = 'Shifts · ' + monthKeyLabel(key);
+    var list = shiftsInMonth(shifts, key).sort(function (a, b) {
+      return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;
+    });
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted">No shifts this month.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(function (s) {
       var job = jobForShift(s, jobs);
       var hrs = shiftHours(s);
       var gross = hrs * job.hourlyRate;
@@ -282,6 +278,49 @@
         '<td>' + fmtMoney(pay.net) + '</td>' +
       '</tr>';
     }).join('');
+  }
+
+  // Render the whole Finance page for the currently-selected month.
+  function renderFinance() {
+    var shifts = (financeState.data && financeState.data.shifts) || [];
+    var jobs = financeState.jobs || loadJobs();
+    var months = monthKeyRange(shifts);
+    var cur = currentMonthKey();
+    if (!financeState.key || months.indexOf(financeState.key) === -1) {
+      financeState.key = months.indexOf(cur) !== -1 ? cur : months[0];
+    }
+    renderMonthSelect(months, financeState.key);
+    renderMonthSummary(shifts, jobs, financeState.key);
+    renderMonthShifts(shifts, jobs, financeState.key);
+
+    var stamp = document.getElementById('hoursStamp');
+    if (stamp) {
+      stamp.textContent = 'Last synced: ' + (financeState.data && financeState.data.updated_at
+        ? new Date(financeState.data.updated_at).toLocaleString([], {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+          })
+        : '—');
+    }
+  }
+
+  function bindFinancePicker() {
+    if (financeState.bound) return;
+    var sel = document.getElementById('finMonthSelect');
+    if (!sel) return;
+    financeState.bound = true;
+    sel.addEventListener('change', function () { financeState.key = sel.value; renderFinance(); });
+    function move(delta) { // +1 = older, -1 = newer (list is newest-first)
+      var months = monthKeyRange((financeState.data && financeState.data.shifts) || []);
+      var i = months.indexOf(financeState.key);
+      var ni = i + delta;
+      if (i === -1 || ni < 0 || ni >= months.length) return;
+      financeState.key = months[ni];
+      renderFinance();
+    }
+    var prev = document.getElementById('finPrev');
+    var next = document.getElementById('finNext');
+    if (prev) prev.addEventListener('click', function () { move(1); });
+    if (next) next.addEventListener('click', function () { move(-1); });
   }
 
   function showEmpty(msg, withLink) {
@@ -361,22 +400,26 @@
       var tbody = document.getElementById('hoursTableBody');
       var grid = document.getElementById('hoursSummaryGrid');
       if (!tbody || !grid) return;
+      bindFinancePicker();
 
       var jobs = loadJobs();
-      var monthly = document.getElementById('monthlyList');
+      var sel = document.getElementById('finMonthSelect');
       var code = localStorage.getItem(SYNC_KEY);
       if (!code) {
+        grid.innerHTML = '<p class="empty-state">No sync code set yet.<br><span class="link-btn" data-view="settings">Go to Settings &rarr;</span></p>';
         tbody.innerHTML = '<tr><td colspan="6" class="muted">No sync code set yet.</td></tr>';
-        if (monthly) monthly.innerHTML = '<p class="empty-state">No sync code set yet.<br><span class="link-btn" data-view="settings">Go to Settings &rarr;</span></p>';
+        if (sel) sel.innerHTML = '<option>' + monthKeyLabel(currentMonthKey()) + '</option>';
         return;
       }
       tbody.innerHTML = '<tr><td colspan="6" class="muted">Loading…</td></tr>';
-      if (monthly) monthly.innerHTML = '<p class="empty-state">Loading…</p>';
+      grid.innerHTML = '<p class="empty-state">Loading…</p>';
       fetchEitjeData(code).then(function (data) {
-        renderHoursPage(data, jobs);
+        financeState.data = data;
+        financeState.jobs = jobs;
+        renderFinance();
       }).catch(function () {
         tbody.innerHTML = '<tr><td colspan="6" class="muted">Couldn\'t load Eitje data. Try again shortly.</td></tr>';
-        if (monthly) monthly.innerHTML = '<p class="empty-state">Couldn\'t load Eitje data. Try again shortly.</p>';
+        grid.innerHTML = '<p class="empty-state">Couldn\'t load Eitje data. Try again shortly.</p>';
       });
     }
   };

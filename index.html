@@ -342,11 +342,20 @@
               <h1 class="vs-page-title">Finance</h1>
               <p class="vs-page-sub">How is your money doing?</p>
             </div>
+            <div class="fin-monthbar">
+              <button class="fin-step" id="finPrev" type="button" title="Previous month" aria-label="Previous month">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+              </button>
+              <select class="fin-month-select" id="finMonthSelect" aria-label="Select month"></select>
+              <button class="fin-step" id="finNext" type="button" title="Next month" aria-label="Next month">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              </button>
+            </div>
           </div>
 
           <div class="card">
             <div class="card-header">
-              <h2>Work Earnings</h2>
+              <h2 id="finSummaryTitle">This Month</h2>
               <span class="card-link" data-view="settings">Sync settings</span>
             </div>
             <div class="card-body">
@@ -362,21 +371,7 @@
 
           <div class="card">
             <div class="card-header">
-              <h2>Monthly Breakdown</h2>
-            </div>
-            <div class="card-body">
-              <div class="fin-months" id="monthlyList">
-                <p class="empty-state">
-                  No sync code set yet.<br>
-                  <span class="link-btn" data-view="settings">Go to Settings &rarr;</span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h2>Shift History</h2>
+              <h2 id="finHistoryTitle">Shifts</h2>
             </div>
             <div class="card-body">
               <div class="hours-table-wrap">
