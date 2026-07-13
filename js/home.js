@@ -40,23 +40,30 @@
   }
   function skelTile() { return '<div class="vs-tile"><div class="vs-skeleton" style="height:24px;width:60%"></div><div class="vs-tile-label" style="margin-top:10px">&nbsp;</div></div>'; }
 
-  function renderStats(brief, earn) {
+  function renderStats(brief, shift, earn) {
     var wrap = el('homeStats');
     if (!wrap) return;
     var t1 = tile(brief.todayCount, 'Tasks today', brief.openCount + ' open');
     var t2 = tile(brief.overdueCount, 'Overdue', brief.overdueCount ? 'needs attention' : 'all clear', brief.overdueCount > 0);
 
-    var t3, t4;
-    if (earn === undefined) { t3 = skelTile(); t4 = skelTile(); }
-    else if (!earn || !earn.hasCode) {
-      t3 = tile('—', 'Next shift', 'no sync');
-      t4 = tile('—', 'This month', 'no sync');
+    // Next shift — from the calendar (sync), so it can show before earnings load.
+    var t3;
+    if (shift) {
+      var v = dayLabel(shift.date) + (shift.start ? ' ' + shift.start : '');
+      t3 = tile(v, 'Next shift', shift.allDay ? 'all day' : (shift.end ? '– ' + shift.end : (shift.label || '')));
+    } else if (earn === undefined) {
+      t3 = skelTile();
     } else {
-      var next = earn.today || (earn.upcoming && earn.upcoming[0]) || null;
-      var nextVal = next ? (dayLabel(next.date) + ' ' + next.start) : 'None';
-      t3 = tile(nextVal, 'Next shift', next ? (next.end ? '– ' + next.end : '') : 'nothing booked');
-      t4 = tile(money(earn.month.net), 'This month', earn.month.hours.toFixed(1) + ' hrs · ' + money(earn.month.gross) + ' gross');
+      t3 = tile('None', 'Next shift', 'nothing booked');
     }
+
+    // This month's pay — from Eitje (async).
+    var t4;
+    if (earn === undefined) t4 = skelTile();
+    else if (!earn || !earn.hasCode) t4 = tile('—', 'This month', 'no sync');
+    else if (earn.error) t4 = tile('—', 'This month', 'load failed');
+    else t4 = tile(money(earn.month.net), 'This month', earn.month.hours.toFixed(1) + ' hrs · ' + money(earn.month.gross) + ' gross');
+
     wrap.innerHTML = t1 + t2 + t3 + t4;
   }
 
@@ -81,42 +88,52 @@
     wrap.innerHTML = brief.focus.map(focusRow).join('');
   }
 
-  /* ── Shift + pay ── */
-  function renderShift(earn) {
+  /* ── Shift (from calendar) + pay (from Eitje) ── */
+  function renderShift(shift, earn) {
     var wrap = el('homeShift');
     if (!wrap) return;
-    if (earn === undefined) {
-      wrap.innerHTML = '<div class="vs-skeleton" style="height:52px;margin-bottom:10px"></div><div class="vs-skeleton" style="height:52px"></div>';
-      return;
-    }
-    if (!earn || !earn.hasCode) {
-      wrap.innerHTML = '<div class="vs-empty" style="padding:24px 12px"><p>Connect your Eitje shifts to see tonight\'s shift and pay.<br><span class="link-btn" data-view="settings">Go to Settings →</span></p></div>';
-      return;
-    }
-    if (earn.error) {
-      wrap.innerHTML = '<div class="vs-empty" style="padding:24px 12px"><p>Couldn\'t load shift data. Try again shortly.</p></div>';
-      return;
-    }
-    var shift = earn.today || (earn.upcoming && earn.upcoming[0]) || null;
-    var shiftBlock;
+
+    // Shift block — driven by the calendar's next Work event.
+    var shiftHtml;
     if (shift) {
-      var isToday = !!earn.today;
-      shiftBlock =
+      var isToday = shift.date === new Date().toISOString().slice(0, 10);
+      var timeLine = shift.allDay
+        ? 'All day'
+        : (shift.start ? esc(shift.start) + ' <span class="home-arrow">→</span> ' + esc(shift.end || '?') : 'Time TBC');
+      var metaBits = [];
+      if (shift.label) metaBits.push(esc(shift.label));
+      if (shift.hours) metaBits.push(shift.hours + 'h');
+      shiftHtml =
         '<div class="home-shift-block">' +
-          '<span class="vs-label">' + (isToday ? 'Tonight\'s shift' : 'Next shift · ' + dayLabel(shift.date)) + '</span>' +
-          '<div class="home-shift-time">' + esc(shift.start) + ' <span class="home-arrow">→</span> ' + esc(shift.end) + '</div>' +
-          (shift.job ? '<div class="vs-row-meta">' + esc(shift.job) + (shift.hours ? '<span class="home-sep">·</span>' + shift.hours + 'h' : '') + '</div>' : '') +
+          '<span class="vs-label">' + (isToday ? 'Today\'s shift' : 'Next shift · ' + dayLabel(shift.date)) + '</span>' +
+          '<div class="home-shift-time">' + timeLine + '</div>' +
+          (metaBits.length ? '<div class="vs-row-meta">' + metaBits.join('<span class="home-sep">·</span>') + '</div>' : '') +
         '</div>';
+    } else if (earn === undefined) {
+      shiftHtml = '<div class="home-shift-block"><span class="vs-label">Next shift</span><div class="vs-skeleton" style="height:22px;width:60%;margin-top:4px"></div></div>';
     } else {
-      shiftBlock = '<div class="home-shift-block"><span class="vs-label">Shift</span><div class="home-shift-time home-muted">No shifts booked</div></div>';
+      shiftHtml = '<div class="home-shift-block"><span class="vs-label">Next shift</span>' +
+        '<div class="home-shift-time home-muted">No shifts booked</div>' +
+        '<div class="vs-row-meta"><span class="link-btn" data-view="calendar">Add one →</span></div></div>';
     }
-    var payBlock =
-      '<div class="home-shift-block">' +
+
+    // Pay block — driven by Eitje earnings.
+    var payHtml;
+    if (earn === undefined) {
+      payHtml = '<div class="home-shift-block"><span class="vs-label">This month</span><div class="vs-skeleton" style="height:26px;width:50%;margin-top:6px"></div></div>';
+    } else if (!earn || !earn.hasCode) {
+      payHtml = '<div class="home-shift-block"><span class="vs-label">This month</span><div class="home-shift-time home-muted">—</div>' +
+        '<div class="vs-row-meta"><span class="link-btn" data-view="settings">Connect Eitje →</span></div></div>';
+    } else if (earn.error) {
+      payHtml = '<div class="home-shift-block"><span class="vs-label">This month</span><div class="home-shift-time home-muted">Couldn\'t load</div></div>';
+    } else {
+      payHtml = '<div class="home-shift-block">' +
         '<span class="vs-label">This month</span>' +
         '<div class="home-pay-val">' + money(earn.month.net) + '</div>' +
         '<div class="vs-tile-sub">' + earn.month.hours.toFixed(1) + ' hrs · ' + money(earn.month.gross) + ' gross</div>' +
       '</div>';
-    wrap.innerHTML = shiftBlock + payBlock;
+    }
+    wrap.innerHTML = shiftHtml + payHtml;
   }
 
   /* ── Upcoming events ── */
@@ -139,16 +156,16 @@
   }
 
   /* ── Brief sentence under the greeting ── */
-  function updateBrief(brief, earn, events) {
+  function updateBrief(brief, shift, events) {
     var node = el('homeBrief');
     if (!node) return;
+    var todayISO = new Date().toISOString().slice(0, 10);
     var parts = [];
     if (brief.todayCount) parts.push(brief.todayCount + (brief.todayCount === 1 ? ' task' : ' tasks') + ' today');
     if (brief.overdueCount) parts.push(brief.overdueCount + ' overdue');
-    if (earn && earn.hasCode && !earn.error) {
-      var shift = earn.today || (earn.upcoming && earn.upcoming[0]);
-      if (earn.today) parts.push('shift tonight at ' + earn.today.start);
-      else if (shift) parts.push('next shift ' + dayLabel(shift.date));
+    if (shift) {
+      if (shift.date === todayISO) parts.push('shift today' + (shift.start ? ' at ' + shift.start : ''));
+      else parts.push('next shift ' + dayLabel(shift.date));
     }
     if (events && events.length) parts.push(events.length + (events.length === 1 ? ' event' : ' events') + ' coming up');
     node.textContent = parts.length ? cap(parts.join(' · ')) + '.' : 'Nothing pressing right now. A calm one.';
@@ -158,32 +175,55 @@
   /* ── Compose ── */
   function briefing() { return (window.VesonTasks && window.VesonTasks.getBriefing) ? window.VesonTasks.getBriefing() : { focus: [], overdueCount: 0, todayCount: 0, openCount: 0, donePct: 0 }; }
   function calEvents() { return (window.VesonCalendar && window.VesonCalendar.getSnapshot) ? window.VesonCalendar.getSnapshot() : []; }
+  function calNextShift() { return (window.VesonCalendar && window.VesonCalendar.getNextShift) ? window.VesonCalendar.getNextShift() : null; }
+
+  // The next shift the user actually has planned: prefer the calendar's Work
+  // event; fall back to an Eitje upcoming shift only if the calendar has none.
+  function resolveShift(calShift, earn) {
+    if (calShift) {
+      return {
+        date: calShift.date,
+        start: calShift.allDay ? null : calShift.startTime,
+        end: calShift.allDay ? null : calShift.endTime,
+        allDay: calShift.allDay,
+        label: calShift.location || calShift.title || 'Shift'
+      };
+    }
+    if (earn && earn.hasCode && !earn.error) {
+      var e = earn.today || (earn.upcoming && earn.upcoming[0]);
+      if (e) return { date: e.date, start: e.start, end: e.end, allDay: false, label: e.job || 'Shift', hours: e.hours };
+    }
+    return null;
+  }
 
   function compose() {
     if (!el('homeStats')) return;
     var brief = briefing();
     var events = calEvents();
+    var calShift = calNextShift();
+    var shift = resolveShift(calShift, null); // calendar-derived, available now
 
-    // Paint sync data immediately…
-    renderStats(brief, undefined);
+    // Paint sync data (tasks + calendar) immediately…
+    renderStats(brief, shift, undefined);
     renderFocus(brief);
-    renderShift(undefined);
+    renderShift(shift, undefined);
     renderUpcoming(events);
-    updateBrief(brief, null, events);
+    updateBrief(brief, shift, events);
 
-    // …then fill the async earnings pieces.
+    // …then fill the async earnings pieces (pay, and shift fallback if no cal shift).
     if (window.VesonEarnings && window.VesonEarnings.getSnapshot) {
       window.VesonEarnings.getSnapshot().then(function (earn) {
-        renderStats(brief, earn);
-        renderShift(earn);
-        updateBrief(brief, earn, events);
+        var s = resolveShift(calShift, earn);
+        renderStats(brief, s, earn);
+        renderShift(s, earn);
+        updateBrief(brief, s, events);
       }).catch(function () {
-        renderStats(brief, null);
-        renderShift(null);
+        renderStats(brief, shift, null);
+        renderShift(shift, null);
       });
     } else {
-      renderStats(brief, null);
-      renderShift(null);
+      renderStats(brief, shift, null);
+      renderShift(shift, null);
     }
   }
 

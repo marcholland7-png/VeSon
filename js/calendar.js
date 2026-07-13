@@ -781,6 +781,31 @@
         return (a.time || '') < (b.time || '') ? -1 : 1;
       });
       return out.slice(0, 20);
+    },
+    // Next planned work shift = the soonest 'work'-category event that hasn't
+    // ended yet. Powers the Home "next shift" surface (Eitje only holds past
+    // synced shifts; the calendar holds what's coming up).
+    getNextShift: function () {
+      var best = null;
+      events.forEach(function (ev) {
+        if (ev.category !== 'work') return;
+        var end = ev.endDate ? parseDate(ev.endDate) : parseDate(ev.date);
+        if (end < today) return; // fully in the past
+        if (!best ||
+            ev.date < best.date ||
+            (ev.date === best.date && (ev.startTime || '') < (best.startTime || ''))) {
+          best = ev;
+        }
+      });
+      if (!best) return null;
+      return {
+        date: best.date,
+        startTime: best.allDay ? null : (best.startTime || null),
+        endTime: best.allDay ? null : (best.endTime || null),
+        allDay: !!best.allDay,
+        title: best.title || 'Shift',
+        location: best.location || null
+      };
     }
   };
 })();
