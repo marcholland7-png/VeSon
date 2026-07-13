@@ -261,6 +261,7 @@ body.light .greeting .subtext { text-shadow: none; }
 .view { display: none; }
 .view.active { display: block; }
 #view-home.active { display: flex; flex-direction: column; flex: 1; }
+#view-calendar.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
 /* ── Dashboard canvas (draggable cards) ── */
 .dash-canvas {
@@ -798,9 +799,12 @@ body.light .greeting .subtext { text-shadow: none; }
 }
 .cal-add-btn:hover { filter: brightness(1.1); }
 
-.cal-body { flex: 1; min-height: 0; }
+.cal-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .cal-view-panel { display: none; }
 .cal-view-panel.active { display: block; }
+/* Month view fills the available page height */
+#calPanel-month.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+#calPanel-month .cal-grid { flex: 1; grid-auto-rows: minmax(104px, 1fr); }
 
 /* ── Month view ── */
 .cal-weekdays {
@@ -859,17 +863,17 @@ body.light .greeting .subtext { text-shadow: none; }
   box-shadow: 0 0 12px var(--accent-glow);
 }
 
-.cal-chips { display: flex; flex-direction: column; gap: 3px; min-height: 0; overflow: hidden; }
+.cal-chips { display: flex; flex-direction: column; gap: 4px; min-height: 0; overflow: hidden; }
 .cal-chip {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: 7px;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 8px;
   border-left: 3px solid var(--chip-color, var(--accent));
   background: var(--chip-bg, var(--accent-dim));
   color: var(--chip-color, var(--accent-text));
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
@@ -880,7 +884,7 @@ body.light .greeting .subtext { text-shadow: none; }
 .cal-chip.dragging { opacity: 0.25; }
 .cal-chip-time { flex-shrink: 0; opacity: 0.85; font-weight: 700; }
 .cal-chip-title { overflow: hidden; text-overflow: ellipsis; }
-.cal-more { font-size: 0.6rem; color: var(--muted); padding: 0 6px; cursor: pointer; }
+.cal-more { font-size: 0.7rem; font-weight: 600; color: var(--muted); padding: 1px 6px; cursor: pointer; }
 .cal-more:hover { color: var(--text); }
 
 /* ── Week view ── */

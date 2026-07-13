@@ -291,11 +291,11 @@
       var chipsWrap = document.createElement('div');
       chipsWrap.className = 'cal-chips';
       var evs = eventsForDate(d);
-      evs.slice(0, 3).forEach(function (ev) { chipsWrap.appendChild(buildChip(ev)); });
-      if (evs.length > 3) {
+      evs.slice(0, 4).forEach(function (ev) { chipsWrap.appendChild(buildChip(ev)); });
+      if (evs.length > 4) {
         var more = document.createElement('div');
         more.className = 'cal-more';
-        more.textContent = '+' + (evs.length - 3) + ' more';
+        more.textContent = '+' + (evs.length - 4) + ' more';
         chipsWrap.appendChild(more);
       }
       cell.appendChild(chipsWrap);
