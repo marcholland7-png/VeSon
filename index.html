@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css?v=7">
-<link rel="stylesheet" href="css/system.css?v=7">
-<link rel="stylesheet" href="css/tasks.css?v=7">
+<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/system.css?v=9">
+<link rel="stylesheet" href="css/tasks.css?v=9">
 </head>
 <body>
 
@@ -163,6 +163,7 @@
                 <option value="deadline">Deadline</option>
                 <option value="priority">Priority</option>
                 <option value="created">Newest</option>
+                <option value="manual">Manual</option>
               </select>
             </div>
             <div class="tk-stats" id="tkStats"></div>
@@ -176,6 +177,50 @@
             <input type="text" id="tkQaInput" placeholder="Add a task…  e.g. Call landlord tomorrow !urgent #home" autocomplete="off">
             <div class="tk-qa-preview" id="tkQaPreview"></div>
             <div class="tk-qa-hint">Enter to add · Esc to close · try dates, !priority, #tags</div>
+          </div>
+        </div>
+
+        <!-- Task edit modal -->
+        <div class="tk-edit-overlay" id="tkEditOverlay" hidden>
+          <div class="tk-edit card">
+            <div class="cal-modal-header">
+              <h2>Edit Task</h2>
+              <button class="cal-modal-close" id="tkEditClose" type="button" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <div class="cf-field">
+              <label class="cf-label" for="tkEditTitle">Title</label>
+              <input type="text" id="tkEditTitle" class="cf-input" placeholder="Task title">
+            </div>
+
+            <div class="cf-field">
+              <label class="cf-label" for="tkEditProject">Project</label>
+              <select id="tkEditProject" class="cf-input"></select>
+            </div>
+
+            <div class="cf-field">
+              <label class="cf-label">Priority</label>
+              <div class="cf-pills" id="tkEditPrio"></div>
+            </div>
+
+            <div class="cf-row">
+              <div class="cf-field">
+                <label class="cf-label" for="tkEditDoDate">Do date</label>
+                <input type="date" id="tkEditDoDate" class="cf-input">
+              </div>
+              <div class="cf-field">
+                <label class="cf-label" for="tkEditDueDate">Due date</label>
+                <input type="date" id="tkEditDueDate" class="cf-input">
+              </div>
+            </div>
+
+            <div class="cf-actions">
+              <button class="cf-delete-btn" id="tkEditDelete" type="button">Delete</button>
+              <button class="btn-ghost" id="tkEditCancel" type="button" style="flex:1">Cancel</button>
+              <button class="btn-save" id="tkEditSave" type="button" style="flex:1">Save</button>
+            </div>
           </div>
         </div>
       </section>
@@ -520,11 +565,11 @@
   </button>
 </div>
 
-<script src="js/calendar.js?v=7"></script>
-<script src="js/earnings.js?v=7"></script>
-<script src="js/tasks.js?v=7"></script>
-<script src="js/home.js?v=7"></script>
-<script src="js/app.js?v=7"></script>
-<script src="js/assistant.js?v=7"></script>
+<script src="js/calendar.js?v=9"></script>
+<script src="js/earnings.js?v=9"></script>
+<script src="js/tasks.js?v=9"></script>
+<script src="js/home.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
+<script src="js/assistant.js?v=9"></script>
 </body>
 </html>

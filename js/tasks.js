@@ -113,6 +113,7 @@
     if (state.sort === 'smart') list.sort(function (a, b) { return focusScore(b) - focusScore(a); });
     else if (state.sort === 'deadline') list.sort(function (a, b) { return (a.dueDate || '9') > (b.dueDate || '9') ? 1 : -1; });
     else if (state.sort === 'priority') list.sort(function (a, b) { return PRIOS.indexOf(b.priority) - PRIOS.indexOf(a.priority); });
+    else if (state.sort === 'manual') list.sort(function (a, b) { return a.order - b.order; });
     else list.sort(function (a, b) { return b.order - a.order; });
     return list;
   }
@@ -166,7 +167,8 @@
       var active = state.project === p.id ? ' active' : '';
       return '<div class="tk-project' + active + '" data-tkproj="' + p.id + '">' +
         '<div class="tk-project-row"><span class="tk-project-name">' + esc(p.name) + '</span>' +
-        '<span class="tk-project-pct">' + pct + '%</span></div>' +
+        '<span class="tk-project-pct">' + pct + '%</span>' +
+        '<button class="tk-project-del" data-delproj="' + p.id + '" title="Delete project" aria-label="Delete project">' + I.trash + '</button></div>' +
         '<div class="tk-project-bar"><span style="width:' + pct + '%"></span></div></div>';
     }).join('') || '<p class="tk-tag" style="padding:0 4px">No projects yet</p>';
 
@@ -307,6 +309,8 @@
     root.addEventListener('click', function (e) {
       var nav = e.target.closest('[data-tkview]');
       if (nav) { state.view = nav.dataset.tkview; state.project = null; render(); return; }
+      var delProj = e.target.closest('[data-delproj]');
+      if (delProj) { deleteProject(delProj.dataset.delproj); return; }
       var proj = e.target.closest('[data-tkproj]');
       if (proj) { state.project = proj.dataset.tkproj; state.view = 'project'; render(); return; }
       var jump = e.target.closest('[data-tkjump]');
@@ -322,11 +326,36 @@
         if (act === 'toggle') toggle(id, rowEl);
         else if (act === 'snooze') snooze(id);
         else if (act === 'delete') del(id);
+        return;
       }
+
+      // Click the task row body (not checkbox/actions) → edit.
+      var taskRowEl = e.target.closest('.tk-task');
+      if (taskRowEl && !tkSuppressClick) { openEdit(taskRowEl.dataset.id); }
     });
 
     document.getElementById('tkSearch').addEventListener('input', function (e) { state.search = e.target.value; renderContent(); });
     document.getElementById('tkSort').addEventListener('change', function (e) { state.sort = e.target.value; renderContent(); });
+
+    initDrag();
+
+    // Edit modal
+    var eov = document.getElementById('tkEditOverlay');
+    eov.addEventListener('click', function (e) { if (e.target === eov) closeEdit(); });
+    document.getElementById('tkEditClose').addEventListener('click', closeEdit);
+    document.getElementById('tkEditCancel').addEventListener('click', closeEdit);
+    document.getElementById('tkEditSave').addEventListener('click', saveEdit);
+    document.getElementById('tkEditDelete').addEventListener('click', function () {
+      if (editingTaskId && confirm('Delete this task?')) { del(editingTaskId); closeEdit(); }
+    });
+    document.getElementById('tkEditPrio').addEventListener('click', function (e) {
+      var p = e.target.closest('.cf-pill'); if (!p) return;
+      document.querySelectorAll('#tkEditPrio .cf-pill').forEach(function (x) { x.classList.remove('sel'); });
+      p.classList.add('sel');
+    });
+    document.getElementById('tkEditTitle').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') saveEdit(); else if (e.key === 'Escape') closeEdit();
+    });
 
     var ov = document.getElementById('tkQaOverlay');
     ov.addEventListener('click', function (e) { if (e.target === ov) closeQA(); });
@@ -348,6 +377,119 @@
   function addProject() {
     var name = prompt('New project name');
     if (name && name.trim()) { projects.push({ id: uid(), name: name.trim(), color: null, createdAt: today() }); save(); render(); }
+  }
+  function deleteProject(id) {
+    var p = projects.filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    var n = projectTasks(id).length;
+    var msg = 'Delete project "' + p.name + '"?' +
+      (n ? '\n\nIts ' + n + ' task' + (n === 1 ? '' : 's') + ' will be kept and moved to no project.' : '');
+    if (!confirm(msg)) return;
+    // Unassign rather than cascade-delete, so tasks fall back to the unfiled bucket.
+    tasks.forEach(function (t) { if (t.projectId === id) t.projectId = null; });
+    projects = projects.filter(function (x) { return x.id !== id; });
+    if (state.project === id) { state.project = null; state.view = 'today'; }
+    save(); render();
+  }
+
+  /* ── Edit task modal ── */
+  var editingTaskId = null;
+  function openEdit(id) {
+    var t = byId(id); if (!t) return;
+    editingTaskId = id;
+    document.getElementById('tkEditTitle').value = t.title;
+    var sel = document.getElementById('tkEditProject');
+    sel.innerHTML = '<option value="">No project</option>' +
+      projects.map(function (p) {
+        return '<option value="' + p.id + '"' + (t.projectId === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>';
+      }).join('');
+    var pills = document.getElementById('tkEditPrio');
+    pills.innerHTML = PRIOS.map(function (pr) {
+      var dot = pr === 'none' ? '' : '<span class="cf-pill-dot tk-prio-dot ' + pr + '"></span>';
+      return '<button type="button" class="cf-pill' + (t.priority === pr ? ' sel' : '') + '" data-prio="' + pr + '">' +
+        dot + (pr.charAt(0).toUpperCase() + pr.slice(1)) + '</button>';
+    }).join('');
+    document.getElementById('tkEditDoDate').value = t.doDate || '';
+    document.getElementById('tkEditDueDate').value = t.dueDate || '';
+    document.getElementById('tkEditOverlay').hidden = false;
+    document.getElementById('tkEditTitle').focus();
+  }
+  function closeEdit() { document.getElementById('tkEditOverlay').hidden = true; editingTaskId = null; }
+  function saveEdit() {
+    var t = byId(editingTaskId); if (!t) { closeEdit(); return; }
+    var title = document.getElementById('tkEditTitle').value.trim();
+    if (!title) { document.getElementById('tkEditTitle').focus(); return; }
+    t.title = title;
+    t.projectId = document.getElementById('tkEditProject').value || null;
+    var selPill = document.querySelector('#tkEditPrio .cf-pill.sel');
+    t.priority = selPill ? selPill.dataset.prio : 'none';
+    t.doDate = document.getElementById('tkEditDoDate').value || null;
+    t.dueDate = document.getElementById('tkEditDueDate').value || null;
+    closeEdit();
+    save(); render();
+  }
+
+  /* ── Drag-to-reorder (mirrors calendar.js pointer drag) ── */
+  var tkDrag = null;
+  var tkSuppressClick = false;
+  function rowAfter(list, y) {
+    var rows = Array.prototype.slice.call(list.querySelectorAll('.tk-task:not(.tk-dragging)'));
+    for (var i = 0; i < rows.length; i++) {
+      var box = rows[i].getBoundingClientRect();
+      if (y < box.top + box.height / 2) return rows[i];
+    }
+    return null;
+  }
+  function commitReorder(list) {
+    var ids = Array.prototype.slice.call(list.querySelectorAll('.tk-task')).map(function (r) { return r.dataset.id; });
+    ids.forEach(function (id, i) { var t = byId(id); if (t) t.order = i; });
+    state.sort = 'manual';
+    var sortSel = document.getElementById('tkSort'); if (sortSel) sortSel.value = 'manual';
+    save(); render();
+  }
+  function initDrag() {
+    var content = document.getElementById('tkContent');
+
+    content.addEventListener('pointerdown', function (e) {
+      if (e.target.closest('[data-act]')) return; // let checkbox/actions work
+      var row = e.target.closest('.tk-task');
+      if (!row || row.classList.contains('done')) return;
+      var list = row.closest('.tk-list');
+      if (!list) return;
+      tkDrag = { row: row, list: list, startY: e.clientY, active: false, moved: false };
+    });
+
+    document.addEventListener('pointermove', function (e) {
+      if (!tkDrag) return;
+      if (!tkDrag.active) {
+        if (Math.abs(e.clientY - tkDrag.startY) < 6) return;
+        tkDrag.active = true; tkDrag.moved = true;
+        tkDrag.row.classList.add('tk-dragging');
+        tkDrag.list.classList.add('tk-reordering');
+      }
+      e.preventDefault();
+      var ref = rowAfter(tkDrag.list, e.clientY);
+      if (ref) tkDrag.list.insertBefore(tkDrag.row, ref);
+      else tkDrag.list.appendChild(tkDrag.row);
+    });
+
+    document.addEventListener('pointerup', function () {
+      if (!tkDrag) return;
+      var d = tkDrag; tkDrag = null;
+      if (d.active) {
+        d.row.classList.remove('tk-dragging');
+        d.list.classList.remove('tk-reordering');
+        tkSuppressClick = true; // swallow the click that follows a drag
+        setTimeout(function () { tkSuppressClick = false; }, 0);
+        commitReorder(d.list);
+      }
+    });
+
+    document.addEventListener('pointercancel', function () {
+      if (!tkDrag) return;
+      if (tkDrag.active) { tkDrag.row.classList.remove('tk-dragging'); tkDrag.list.classList.remove('tk-reordering'); render(); }
+      tkDrag = null;
+    });
   }
 
   /* ── Read model for other surfaces (Home briefing, future AI) ── */
@@ -373,11 +515,21 @@
     refresh: function () { load(); render(); },
 
     // Compact "what needs attention" surface for Home (and later the AI).
-    // Focus = overdue first, then today's tasks, smart-ranked, top 5.
+    // Focus = overdue + anything landing (do OR due) in the next 3 days,
+    // smart-ranked, top 5. Loosened from "exactly today" so a task due in a
+    // couple of days is visible on Home before its deadline sneaks up.
     getBriefing: function () {
       if (!tasks.length) load();
       var od = overdue();
-      var focusPool = od.concat(todayList());
+      var d = today(), horizon = addDays(d, 3);
+      var soon = tasks.filter(function (t) {
+        if (!isTodo(t)) return false;
+        var dueSoon = t.dueDate && t.dueDate >= d && t.dueDate <= horizon;
+        var doSoon = t.doDate && t.doDate >= d && t.doDate <= horizon;
+        return dueSoon || doSoon;
+      });
+      var seen = {}, focusPool = [];
+      od.concat(soon).forEach(function (t) { if (!seen[t.id]) { seen[t.id] = 1; focusPool.push(t); } });
       focusPool.sort(function (a, b) { return focusScore(b) - focusScore(a); });
       return {
         focus: focusPool.slice(0, 5).map(briefItem),

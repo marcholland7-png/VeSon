@@ -4,6 +4,13 @@ Paste the block below into a **Claude Cowork** session on your desktop (with you
 
 Run it whenever you want fresh data — after a shift, or on a schedule.
 
+**This is a fallback.** If this session has the VeSon project folder attached, `CLAUDE.md` in the repo root already has all of this context loaded automatically — you shouldn't need to paste anything, just ask in plain language (e.g. "add my worked shifts up to today into veson"). Only paste the block below if you're in a session that for some reason doesn't have this folder attached (e.g. a Dispatch chat opened fresh without the project).
+
+**v3 (2026-07-18):** now covers both jobs. Marc works two bars:
+- **Poolbar** = the Eitje-tracked job ("De Gracht Vast"), pulled automatically per the steps below.
+- **Woodstock** = a second job with no scheduling app; Marc reports these shifts manually, you just need to log them with `team: "Woodstock"`.
+Both pay €17.00/hr (see Eitje → Contracten → Uurloon). Each shift now carries `hours` and `pay` fields alongside date/start/end/status/team — this is the closest thing VESON has to a "finance" view, since `eitje_data` is a single jsonb column, not a separate finance table.
+
 **v2 (2026-07-06):** the v1 prompt ran but left the `eitje_data` table completely empty (verified via direct query) — no rows at all, for any code. v2 is self-verifying: it makes Cowork narrate each step, echo the exact Supabase response, and read the row back afterward so a silent failure can't happen again. It also pins the date range to June–July 2026 instead of a vague "last ~30 days."
 
 ---
@@ -33,13 +40,27 @@ For every shift row in that range, extract:
 - start  → "HH:MM" 24-hour
 - end    → "HH:MM" 24-hour (may cross midnight)
 - status → raw status text as shown (e.g. "in_afwachting", "goedgekeurd", "afgekeurd")
-- team   → team/employer text as shown (e.g. "De Gracht Vast (De Gracht B.V.)")
+- team   → "Poolbar" (label Eitje/De Gracht shifts this way, not the raw
+  Eitje team text) for shifts from this page, or "Woodstock" for any
+  shifts I give you manually
+- hours  → end - start as decimal, adding 24h if end < start (crosses midnight)
+- hourly_rate → 17.00 (see Eitje → Contracten → Uurloon)
+- pay    → hours × hourly_rate
 
-STEP 4 — Upload to Supabase.
+STEP 4 — Merge, don't overwrite.
+GET the current row first (`?code=eq.QIMC3M5I&select=shifts`), merge your
+new/updated rows into the existing `shifts` array (dedupe on date+team,
+keep everything already there — Eitje's list is a rolling window and
+drops old shifts once they're approved/paid, so "not on the page anymore"
+does NOT mean "delete it"), then re-sort by date before writing.
+
+STEP 5 — Upload to Supabase.
 POST this exact request (do not silently swallow errors — show me the full
 response body no matter what):
 
-- URL:    https://jmmwqqssqujsiedafqdd.supabase.co/rest/v1/eitje_data?on_conflict=code
+- URL:    https://jmmwqqssqujsiedafqdd.supabase.co/rest/v1/eitje_data
+  (do NOT add ?on_conflict=code — that param causes a 42501 row-level-security
+  violation on the update path; plain POST + the Prefer header below upserts fine)
 - Method: POST
 - Headers:
     apikey: sb_publishable_0MIMm7jy7QykSBBBOZb5nw_wLaGbnoN
@@ -49,14 +70,19 @@ response body no matter what):
 - Body:
     {
       "code": "QIMC3M5I",
-      "shifts": [ ...the collected list... ],
+      "shifts": [ ...the full merged list, not just new rows... ],
       "updated_at": "<current ISO 8601 timestamp>"
     }
 
 Note: `return=representation` (not `return=minimal`) so the response body
 shows what actually got written — paste that raw response back to me.
 
-STEP 5 — Verify by reading it back.
+Also note: Supabase's domain is blocked by the sandbox shell's network
+allowlist — run these as `fetch()` calls via the Chrome extension's
+javascript_tool against an already-open tab (e.g. the Eitje tab), not via
+bash/curl.
+
+STEP 6 — Verify by reading it back.
 Immediately do a GET to confirm the write really landed:
 
     GET https://jmmwqqssqujsiedafqdd.supabase.co/rest/v1/eitje_data?code=eq.QIMC3M5I&select=code,updated_at,shifts

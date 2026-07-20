@@ -126,6 +126,23 @@
   text-overflow: ellipsis;
 }
 .tk-project-pct { margin-left: auto; font-size: 0.64rem; font-weight: 700; color: var(--muted); }
+.tk-project-del {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  width: 0;
+  overflow: hidden;
+  opacity: 0;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.16s ease, width 0.16s ease, color 0.16s ease;
+}
+.tk-project-del svg { width: 13px; height: 13px; }
+.tk-project:hover .tk-project-del { opacity: 1; width: 15px; }
+.tk-project-del:hover { color: var(--accent); }
 .tk-project-bar {
   height: 3px;
   border-radius: 3px;
@@ -269,7 +286,8 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
-  cursor: default;
+  cursor: pointer;
+  touch-action: pan-y;
   animation: tk-rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: transform 0.14s ease, border-color 0.16s ease, opacity 0.3s ease;
 }
@@ -437,6 +455,49 @@
   border-top: 1px solid var(--surface-border);
   margin-top: 6px;
 }
+
+/* ── Edit task modal ─────────────────────────────────────────────── */
+.tk-edit-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10vh;
+  background: rgba(6, 6, 9, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: tk-fade 0.2s ease both;
+}
+.tk-edit-overlay[hidden] { display: none; }
+.tk-edit {
+  width: min(440px, 92vw);
+  padding: 22px 24px;
+  animation: tk-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.tk-edit select.cf-input { cursor: pointer; }
+.tk-edit .cf-actions { margin-top: 20px; }
+
+/* Priority pill dots — reuse the .tk-prio palette on cf-pills. */
+.tk-prio-dot.urgent { background: var(--accent); }
+.tk-prio-dot.high { background: #ff8f4d; }
+.tk-prio-dot.medium { background: #f2c14e; }
+.tk-prio-dot.low { background: var(--muted); }
+
+/* Drag-to-reorder */
+.tk-task.tk-dragging {
+  opacity: 0.85;
+  cursor: grabbing;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.34);
+  border-color: var(--accent);
+  transform: scale(1.01);
+  position: relative;
+  z-index: 5;
+}
+.tk-list.tk-reordering { cursor: grabbing; }
+.tk-list.tk-reordering .tk-task { transition: transform 0.16s ease; }
+.tk-list.tk-reordering .tk-task-actions { opacity: 0 !important; }
 
 /* ── Animations ──────────────────────────────────────────────────── */
 @keyframes tk-fade { from { opacity: 0; } to { opacity: 1; } }

@@ -36,6 +36,7 @@
   var repeatWeeks = 2;
   var activeModal = null;
   var drag = null;
+  var purgedInvalid = false;
 
   /* ── Date helpers ── */
   function startOfDay(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
@@ -43,6 +44,11 @@
     return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
   function parseDate(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  // VeSon's date logic assumes well-formed ISO dates and doesn't validate them.
+  // A missing/garbage date (e.g. the old "60707-02-20" corruption) parses to an
+  // Invalid Date that slips past every `< today` guard, so it gets stuck as a
+  // phantom "upcoming" shift. Gate anything date-driven on this.
+  function isValidDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s); }
   function isSameDay(a, b) {
     return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   }
@@ -58,8 +64,9 @@
   function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
   function eventSpansDate(ev, d) {
+    if (!isValidDate(ev.date)) return false;
     var start = parseDate(ev.date);
-    var end = ev.endDate ? parseDate(ev.endDate) : start;
+    var end = ev.endDate && isValidDate(ev.endDate) ? parseDate(ev.endDate) : start;
     var x = startOfDay(d);
     return x >= start && x <= end;
   }
@@ -79,6 +86,27 @@
     try { events = JSON.parse(localStorage.getItem(EVENTS_KEY) || '[]'); } catch (e) { events = []; }
     try { tombstones = JSON.parse(localStorage.getItem(TOMBS_KEY) || '[]'); } catch (e) { tombstones = []; }
     try { remoteTodos = JSON.parse(localStorage.getItem(REMOTE_TODOS_KEY) || '[]'); } catch (e) { remoteTodos = []; }
+    purgeInvalidEvents();
+  }
+
+  // Drop events whose date is missing or malformed — they can't render on the
+  // calendar (so there's no way to delete them from the UI) yet still surface as
+  // phantom "upcoming"/"next shift" entries. Tombstone them so the deletion also
+  // propagates to Supabase on the next pushSync, matching the normal delete path.
+  function purgeInvalidEvents() {
+    var bad = events.filter(function (e) { return !isValidDate(e.date); });
+    if (!bad.length) return;
+    tombstoneIds(bad.map(function (e) { return e.id; }));
+    events = events.filter(function (e) { return isValidDate(e.date); });
+    saveLocal();
+    purgedInvalid = true; // push the tombstone to Supabase after the next pull
+  }
+  // Propagate a purge to Supabase once, after pullSync has refreshed remoteTodos
+  // (pushing before a pull could clobber remote todos with a stale local cache).
+  function flushPurge() {
+    if (!purgedInvalid) return;
+    purgedInvalid = false;
+    pushSync();
   }
   function tombstoneIds(ids) {
     var t = nowIso();
@@ -752,11 +780,11 @@
       initAgendaInteractions();
       initEventFormListeners();
       render();
-      pullSync().then(render);
+      pullSync().then(function () { render(); flushPurge(); });
     },
     refresh: function () {
       render();
-      pullSync().then(render);
+      pullSync().then(function () { render(); flushPurge(); });
     },
     // Compact list of events from today through the next ~3 weeks, for the AI
     // command bar. Reads the already-synced in-memory events.
@@ -765,8 +793,9 @@
       horizon.setDate(horizon.getDate() + 21);
       var out = [];
       events.forEach(function (ev) {
+        if (!isValidDate(ev.date)) return;
         var start = parseDate(ev.date);
-        var end = ev.endDate ? parseDate(ev.endDate) : start;
+        var end = ev.endDate && isValidDate(ev.endDate) ? parseDate(ev.endDate) : start;
         if (end < today || start > horizon) return;
         out.push({
           date: ev.date,
@@ -789,7 +818,8 @@
       var best = null;
       events.forEach(function (ev) {
         if (ev.category !== 'work') return;
-        var end = ev.endDate ? parseDate(ev.endDate) : parseDate(ev.date);
+        if (!isValidDate(ev.date)) return; // skip malformed/dateless phantom shifts
+        var end = ev.endDate && isValidDate(ev.endDate) ? parseDate(ev.endDate) : parseDate(ev.date);
         if (end < today) return; // fully in the past
         if (!best ||
             ev.date < best.date ||
